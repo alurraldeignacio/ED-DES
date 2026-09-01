@@ -81,9 +81,9 @@ ED-DES/                              # git repository; all source lives here
 - [X] T021 Implement InMemoryEventLog in src/UrgentCare.Core/Events/InMemoryEventLog.cs as the event source all metrics derive from, and document its retention limit: it holds every event for the run, which is acceptable at the default scale (roughly 1000 patients per simulated week) but must be replaced by a streaming or windowed sink before long horizons or large replication batches
 - [X] T022 [P] Add the default scenario file shared/config/default-scenario.json matching the example object in contracts/simulation-config.md, including `schemaVersion`
 - [X] T023 [P] Add shared/schemas/simulation-config.schema.json describing the configuration contract, with `schemaVersion` as a required property
-- [ ] T024 [P] Unit tests for configuration validation, including a missing or unsupported schemaVersion, missing arrival rates, and negative staffing, in tests/unit/UrgentCare.Core.Tests/ScenarioConfigValidatorTests.cs
-- [ ] T025 [P] Unit test asserting two SeededRandomSource instances with the same seed emit identical sequences in tests/unit/UrgentCare.Core.Tests/SeededRandomSourceTests.cs
-- [ ] T025a [P] Unit tests for MathNetDistributionFactory asserting each supported family (categorical, normal, lognormal, triangular, exponential) samples in range and is deterministic under a fixed IRandomSource, in tests/unit/UrgentCare.Analysis.Tests/MathNetDistributionFactoryTests.cs
+- [X] T024 [P] Unit tests for configuration validation, including a missing or unsupported schemaVersion, missing arrival rates, and negative staffing, in tests/unit/UrgentCare.Core.Tests/ScenarioConfigValidatorTests.cs
+- [X] T025 [P] Unit test asserting two SeededRandomSource instances with the same seed emit identical sequences in tests/unit/UrgentCare.Core.Tests/SeededRandomSourceTests.cs
+- [X] T025a [P] Unit tests for MathNetDistributionFactory asserting each supported family (categorical, normal, lognormal, triangular, exponential) samples in range and is deterministic under a fixed IRandomSource, in tests/unit/UrgentCare.Analysis.Tests/MathNetDistributionFactoryTests.cs
 
 **Checkpoint**: Configuration contract, deterministic randomness, and the event stream exist, so user stories can begin
 
@@ -99,40 +99,40 @@ ED-DES/                              # git repository; all source lives here
 
 > Write these first and confirm they FAIL before implementing.
 
-- [ ] T026 [P] [US1] Integration test covering arrival through completion for one queue and one care resource (SC-005) in tests/integration/UrgentCare.Integration.Tests/EndToEndFlowTests.cs
-- [ ] T027 [P] [US1] Integration test asserting a more acute arrival (a lower urgency value on the ESI scale) is treated before less acute patients already waiting (AS2) in tests/integration/UrgentCare.Integration.Tests/UrgencyPriorityTests.cs
-- [ ] T028 [P] [US1] Integration test asserting a patient exceeding abandonmentThreshold leaves the queue and is counted as abandoned (AS3) in tests/integration/UrgentCare.Integration.Tests/AbandonmentTests.cs
-- [ ] T028a [P] [US1] Integration test asserting rooms cap concurrent treatments for low-acuity patients while a patient at or below `roomBypassUrgency` is admitted with all rooms occupied, in tests/integration/UrgentCare.Integration.Tests/RoomCapacityTests.cs
-- [ ] T029 [P] [US1] Unit tests for start, pause, resume, reset, and speed adjustment in tests/unit/UrgentCare.Core.Tests/SimulationClockTests.cs
-- [ ] T030 [P] [US1] Unit tests for Patient validation and terminal-state rules in tests/unit/UrgentCare.Core.Tests/PatientTests.cs
-- [ ] T031 [P] [US1] Unit tests for CareResource validation (efficiency above zero, bounded fatigue, null assignedPatient when available, and rejection of a second concurrent assignment) in tests/unit/UrgentCare.Core.Tests/CareResourceTests.cs
-- [ ] T031a [P] [US1] Unit tests for the fatigue and efficiency formula (fatigue accrues over a shift, efficiency clamps at minEfficiency and maxEfficiency, effective duration lengthens as efficiency falls) in tests/unit/UrgentCare.Core.Tests/ResourceEfficiencyTests.cs
-- [ ] T032 [P] [US1] Unit tests for UrgencyFirstPolicy ordering, asserting ascending urgency value is served first (1 before 5) in tests/unit/UrgentCare.Core.Tests/UrgencyFirstPolicyTests.cs
+- [X] T026 [P] [US1] Integration test covering arrival through completion for one queue and one care resource (SC-005) in tests/integration/UrgentCare.Integration.Tests/EndToEndFlowTests.cs
+- [X] T027 [P] [US1] Integration test asserting a more acute arrival (a lower urgency value on the ESI scale) is treated before less acute patients already waiting (AS2) in tests/integration/UrgentCare.Integration.Tests/UrgencyPriorityTests.cs
+- [X] T028 [P] [US1] Integration test asserting a patient exceeding abandonmentThreshold leaves the queue and is counted as abandoned (AS3) in tests/integration/UrgentCare.Integration.Tests/AbandonmentTests.cs
+- [X] T028a [P] [US1] Integration test asserting rooms cap concurrent treatments for low-acuity patients while a patient at or below `roomBypassUrgency` is admitted with all rooms occupied, in tests/integration/UrgentCare.Integration.Tests/RoomCapacityTests.cs
+- [X] T029 [P] [US1] Unit tests for start, pause, resume, reset, and speed adjustment in tests/unit/UrgentCare.Core.Tests/SimulationClockTests.cs
+- [X] T030 [P] [US1] Unit tests for Patient validation and terminal-state rules in tests/unit/UrgentCare.Core.Tests/PatientTests.cs
+- [X] T031 [P] [US1] Unit tests for CareResource validation (efficiency above zero, bounded fatigue, null assignedPatient when available, and rejection of a second concurrent assignment) in tests/unit/UrgentCare.Core.Tests/CareResourceTests.cs
+- [X] T031a [P] [US1] Unit tests for the fatigue and efficiency formula (fatigue accrues over a shift, efficiency clamps at minEfficiency and maxEfficiency, effective duration lengthens as efficiency falls) in tests/unit/UrgentCare.Core.Tests/ResourceEfficiencyTests.cs
+- [X] T032 [P] [US1] Unit tests for UrgencyFirstPolicy ordering, asserting ascending urgency value is served first (1 before 5) in tests/unit/UrgentCare.Core.Tests/UrgencyFirstPolicyTests.cs
 
 ### Implementation for User Story 1
 
-- [ ] T033 [P] [US1] Implement Patient in src/UrgentCare.Core/Domain/Patient.cs with the data-model.md fields and validation rules (urgency 1 to 5 on the ESI scale where 1 is most severe, non-negative threshold, positive serviceDuration)
-- [ ] T034 [P] [US1] Implement CareResource in src/UrgentCare.Core/Domain/CareResource.cs with experience, efficiency, fatigue, and shiftStart, serving at most one patient at a time (no per-resource capacity field), enforcing the numeric bounds in data-model.md
-- [ ] T034a [US1] Implement the fatigue and efficiency dynamics in src/UrgentCare.Core/Domain/CareResource.cs per the formula in data-model.md, so effective service duration is the sampled duration divided by the resource's current efficiency (FR-004 time-dependent clause)
-- [ ] T035 [US1] Implement Department in src/UrgentCare.Core/Domain/Department.cs owning care resources, the waiting area, rooms as a finite occupancy pool, and the active queue policy (depends on T033, T034)
-- [ ] T036 [P] [US1] Implement SimulationClock in src/UrgentCare.Core/Clock/SimulationClock.cs, decoupled from real-time UI timing (FR-007)
-- [ ] T037 [P] [US1] Implement the ScheduledEvent record in src/UrgentCare.Core/Events/ScheduledEvent.cs
-- [ ] T038 [US1] Implement FutureEventList as a time-ordered priority queue in src/UrgentCare.Core/Events/FutureEventList.cs
-- [ ] T039 [P] [US1] Define IQueuePolicy in src/UrgentCare.Core/Queues/IQueuePolicy.cs so new policies never require changes to Patient (FR-005)
-- [ ] T040 [US1] Implement UrgencyFirstPolicy in src/UrgentCare.Core/Queues/UrgencyFirstPolicy.cs ordering by ascending urgency value (ESI: 1 is most severe), breaking ties by arrival time
-- [ ] T041 [P] [US1] Define IPatientGenerator in src/UrgentCare.Core/Generation/IPatientGenerator.cs, keeping sampling outside the Patient entity (FR-006)
-- [ ] T042 [US1] Implement PatientGenerator in src/UrgentCare.Core/Generation/PatientGenerator.cs sampling interarrival time, urgency, age, serviceDuration, and abandonmentThreshold from the configured parameterized distribution objects via IDistributionFactory and IRandomSource, with no distribution parameters hard-coded in the generator (FR-012)
-- [ ] T043 [US1] Implement the SimulationEngine loop (advance clock, pop and dispatch events, honor Idle/Running/Paused/Complete) in src/UrgentCare.Core/SimulationEngine.cs
-- [ ] T044 [US1] Implement arrival handling (generate the next patient, enqueue via the active policy, schedule the following arrival) in src/UrgentCare.Core/SimulationEngine.cs
-- [ ] T045 [US1] Implement resource assignment, treatment start, and treatment completion with Available/Busy transitions in src/UrgentCare.Core/SimulationEngine.cs, scheduling completion at the effective service duration returned by T034a rather than the raw sampled duration, and admitting a patient only when a care resource is free and either a room is free or the patient's urgency is at or below `roomBypassUrgency`
-- [ ] T046 [US1] Implement the abandonment check that removes a waiting patient once waitingTime exceeds abandonmentThreshold in src/UrgentCare.Core/SimulationEngine.cs
-- [ ] T047 [US1] Emit SimulationEvent telemetry to IEventSink at every arrival, treatment start, completion, abandonment, and resource state change in src/UrgentCare.Core/SimulationEngine.cs
-- [ ] T048 [US1] Implement StatisticsCollector in src/UrgentCare.Core/Metrics/StatisticsCollector.cs deriving arrivals, completed, abandoned, averageWaitTime, throughput, and utilization from the event log rather than from ad hoc counters, honoring the MetricsConfig flags so a disabled metric is not reported (FR-009)
-- [ ] T049 [US1] Implement the console operational view showing queue state, patient locations, and resource status over time in src/UrgentCare.Cli/ConsoleOperationalView.cs (FR-008; the Unity view is deferred)
-- [ ] T049a [US1] Implement interactive clock controls in the console view (space to pause and resume, r to reset, plus and minus to adjust speed, q to quit) bound to the SimulationClock operations from T036, in src/UrgentCare.Cli/ConsoleOperationalView.cs (FR-007 control surface)
-- [ ] T050 [US1] Implement the `--scenario <name>` and `--headless` CLI entry points loading from shared/config/ in src/UrgentCare.Cli/Program.cs and src/UrgentCare.Cli/CommandLineOptions.cs. `--headless` skips the interactive input loop from T049a so batch runs, `--compare`, and CI stay non-interactive
-- [ ] T051 [US1] Add explicit guards and messages for degenerate scenarios (no arrivals, no staffing, and zero rooms combined with a `roomBypassUrgency` of 0, which admits nobody) in src/UrgentCare.Core/SimulationEngine.cs
-- [ ] T051a [US1] Integration test for sustained overload: arrivals exceeding service capacity for an extended period must keep the run stable, with queue length and abandonment growing rather than the engine stalling or the event log growing without bound (spec.md Edge Cases) in tests/integration/UrgentCare.Integration.Tests/SustainedOverloadTests.cs
+- [X] T033 [P] [US1] Implement Patient in src/UrgentCare.Core/Domain/Patient.cs with the data-model.md fields and validation rules (urgency 1 to 5 on the ESI scale where 1 is most severe, non-negative threshold, positive serviceDuration)
+- [X] T034 [P] [US1] Implement CareResource in src/UrgentCare.Core/Domain/CareResource.cs with experience, efficiency, fatigue, and shiftStart, serving at most one patient at a time (no per-resource capacity field), enforcing the numeric bounds in data-model.md
+- [X] T034a [US1] Implement the fatigue and efficiency dynamics in src/UrgentCare.Core/Domain/CareResource.cs per the formula in data-model.md, so effective service duration is the sampled duration divided by the resource's current efficiency (FR-004 time-dependent clause)
+- [X] T035 [US1] Implement Department in src/UrgentCare.Core/Domain/Department.cs owning care resources, the waiting area, rooms as a finite occupancy pool, and the active queue policy (depends on T033, T034)
+- [X] T036 [P] [US1] Implement SimulationClock in src/UrgentCare.Core/Clock/SimulationClock.cs, decoupled from real-time UI timing (FR-007)
+- [X] T037 [P] [US1] Implement the ScheduledEvent record in src/UrgentCare.Core/Events/ScheduledEvent.cs
+- [X] T038 [US1] Implement FutureEventList as a time-ordered priority queue in src/UrgentCare.Core/Events/FutureEventList.cs
+- [X] T039 [P] [US1] Define IQueuePolicy in src/UrgentCare.Core/Queues/IQueuePolicy.cs so new policies never require changes to Patient (FR-005)
+- [X] T040 [US1] Implement UrgencyFirstPolicy in src/UrgentCare.Core/Queues/UrgencyFirstPolicy.cs ordering by ascending urgency value (ESI: 1 is most severe), breaking ties by arrival time
+- [X] T041 [P] [US1] Define IPatientGenerator in src/UrgentCare.Core/Generation/IPatientGenerator.cs, keeping sampling outside the Patient entity (FR-006)
+- [X] T042 [US1] Implement PatientGenerator in src/UrgentCare.Core/Generation/PatientGenerator.cs sampling interarrival time, urgency, age, serviceDuration, and abandonmentThreshold from the configured parameterized distribution objects via IDistributionFactory and IRandomSource, with no distribution parameters hard-coded in the generator (FR-012)
+- [X] T043 [US1] Implement the SimulationEngine loop (advance clock, pop and dispatch events, honor Idle/Running/Paused/Complete) in src/UrgentCare.Core/SimulationEngine.cs
+- [X] T044 [US1] Implement arrival handling (generate the next patient, enqueue via the active policy, schedule the following arrival) in src/UrgentCare.Core/SimulationEngine.cs
+- [X] T045 [US1] Implement resource assignment, treatment start, and treatment completion with Available/Busy transitions in src/UrgentCare.Core/SimulationEngine.cs, scheduling completion at the effective service duration returned by T034a rather than the raw sampled duration, and admitting a patient only when a care resource is free and either a room is free or the patient's urgency is at or below `roomBypassUrgency`
+- [X] T046 [US1] Implement the abandonment check that removes a waiting patient once waitingTime exceeds abandonmentThreshold in src/UrgentCare.Core/SimulationEngine.cs
+- [X] T047 [US1] Emit SimulationEvent telemetry to IEventSink at every arrival, treatment start, completion, abandonment, and resource state change in src/UrgentCare.Core/SimulationEngine.cs
+- [X] T048 [US1] Implement StatisticsCollector in src/UrgentCare.Core/Metrics/StatisticsCollector.cs deriving arrivals, completed, abandoned, averageWaitTime, throughput, and utilization from the event log rather than from ad hoc counters, honoring the MetricsConfig flags so a disabled metric is not reported (FR-009)
+- [X] T049 [US1] Implement the console operational view showing queue state, patient locations, and resource status over time in src/UrgentCare.Cli/ConsoleOperationalView.cs (FR-008; the Unity view is deferred)
+- [X] T049a [US1] Implement interactive clock controls in the console view (space to pause and resume, r to reset, plus and minus to adjust speed, q to quit) bound to the SimulationClock operations from T036, in src/UrgentCare.Cli/ConsoleOperationalView.cs (FR-007 control surface)
+- [X] T050 [US1] Implement the `--scenario <name>` and `--headless` CLI entry points loading from shared/config/ in src/UrgentCare.Cli/Program.cs and src/UrgentCare.Cli/CommandLineOptions.cs. `--headless` skips the interactive input loop from T049a so batch runs, `--compare`, and CI stay non-interactive
+- [X] T051 [US1] Add explicit guards and messages for degenerate scenarios (no arrivals, no staffing, and zero rooms combined with a `roomBypassUrgency` of 0, which admits nobody) in src/UrgentCare.Core/SimulationEngine.cs
+- [X] T051a [US1] Integration test for sustained overload: arrivals exceeding service capacity for an extended period must keep the run stable, with queue length and abandonment growing rather than the engine stalling or the event log growing without bound (spec.md Edge Cases) in tests/integration/UrgentCare.Integration.Tests/SustainedOverloadTests.cs
 
 **Checkpoint**: User Story 1 is fully functional and demoable on its own. This is the MVP.
 
@@ -159,7 +159,7 @@ ED-DES/                              # git repository; all source lives here
 - [ ] T056 [P] [US2] Implement FifoPolicy in src/UrgentCare.Core/Queues/FifoPolicy.cs
 - [ ] T057 [P] [US2] Implement UrgencyPlusWaitPolicy in src/UrgentCare.Core/Queues/UrgencyPlusWaitPolicy.cs
 - [ ] T058 [US2] Implement QueuePolicyFactory resolving the config queuePolicy string to a policy instance in src/UrgentCare.Core/Queues/QueuePolicyFactory.cs
-- [ ] T059 [US2] Implement the non-stationary arrival time profile (hourly, daily, seasonal variation) over `baseRatePerHour` in src/UrgentCare.Core/Generation/ArrivalModel.cs (FR-001)
+- [X] T059 [US2] Implement the non-stationary arrival time profile (hourly, daily, seasonal variation) over `baseRatePerHour` in src/UrgentCare.Core/Generation/ArrivalModel.cs (FR-001)
 - [ ] T060 [US2] Wire queuePolicy and arrivalModel selection from ScenarioConfig into engine construction in src/UrgentCare.Core/SimulationEngine.cs so behavior changes without code edits (FR-012)
 - [ ] T061 [US2] Implement ScenarioRunner executing a batch of scenario configurations in analysis/UrgentCare.Analysis/Scenarios/ScenarioRunner.cs
 - [ ] T062 [US2] Implement ScenarioComparison producing a baseline-versus-variant table of waiting time, throughput, abandonment, and utilization in analysis/UrgentCare.Analysis/Scenarios/ScenarioComparison.cs (FR-010)

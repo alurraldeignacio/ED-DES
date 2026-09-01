@@ -110,13 +110,15 @@ Every distribution is an object with a `family` discriminator plus the parameter
 `resourceProfile` supplies the parameters that drive time-dependent productivity. The engine derives effective service duration as follows:
 
 ```text
-fatigue(t)    = min(1.0, fatigueRatePerMinute * minutesSinceShiftStart)
+fatigue(t)    = min(1.0, fatigueRatePerMinute * minutesIntoCurrentShift)
 efficiency(t) = clamp(baseEfficiency * (1 + experienceBonus * experience) * (1 - fatigue(t)),
                       minEfficiency, maxEfficiency)
 effectiveServiceDuration = sampledServiceDuration / efficiency(t)
 ```
 
 An efficiency above 1.0 shortens treatment; an efficiency below 1.0 lengthens it. With the defaults above, a resource starts a shift at efficiency 1.2 and ends an 8-hour shift at 0.84.
+
+Fatigue accrues across the *current* shift and resets when the next one begins, so `minutesIntoCurrentShift` is the elapsed time since `shiftStart` reduced modulo `shiftLengthMinutes`. An exact multiple of the shift length counts as the end of that shift rather than the start of the next. Without this reset a multi-day run would pin every resource at `minEfficiency` permanently and `shiftLengthMinutes` would have no effect on behavior.
 
 ## Contract rules
 

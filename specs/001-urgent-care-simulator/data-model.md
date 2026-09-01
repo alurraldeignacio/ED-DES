@@ -58,13 +58,13 @@ The simulation domain is organized around a small set of entities with explicit 
 **Derived behavior** (parameters come from `resourceProfile` in contracts/simulation-config.md):
 
 ```text
-fatigue(t)    = min(1.0, fatigueRatePerMinute * minutesSinceShiftStart)
+fatigue(t)    = min(1.0, fatigueRatePerMinute * minutesIntoCurrentShift)
 efficiency(t) = clamp(baseEfficiency * (1 + experienceBonus * experience) * (1 - fatigue(t)),
                       minEfficiency, maxEfficiency)
 effectiveServiceDuration = sampledServiceDuration / efficiency(t)
 ```
 
-`efficiency` and `fatigue` are recomputed when a resource starts a treatment; both are derived state and are never configured directly.
+`efficiency` and `fatigue` are recomputed when a resource starts a treatment; both are derived state and are never configured directly. `minutesIntoCurrentShift` is the time since `shiftStart` reduced modulo `shiftLengthMinutes`, so fatigue resets each shift rather than accumulating without bound across a multi-day run.
 
 ### Department
 
