@@ -15,12 +15,12 @@ Validate the MVP simulation end-to-end by running a scenario with patient arriva
 
 1. Restore and build the simulation core.
    ```bash
-   dotnet restore ED-DES/UrgentCare.sln
-   dotnet build ED-DES/UrgentCare.sln
+   dotnet restore UrgentCare.sln
+   dotnet build UrgentCare.sln
    ```
 2. Run the scenario in console or headless mode.
    ```bash
-   dotnet run --project ED-DES/src/UrgentCare.Cli/UrgentCare.Cli.csproj -- --scenario default
+   dotnet run --project src/UrgentCare.Cli/UrgentCare.Cli.csproj -- --scenario default
    ```
 3. Review the output metrics for arrivals, waiting time, abandonment, throughput, and utilization.
 4. Repeat the same scenario with a different seed or staffing count to compare results.

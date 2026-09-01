@@ -50,3 +50,5 @@
 **Alternatives considered**:
 - Place state and logic in Unity scripts: rejected because it complicates testing and makes non-visual runs harder.
 - Use the UI as the source of truth for simulation state: rejected because it creates hidden coupling and poor separation of concerns.
+
+**Known constraint**: Unity 2022 LTS cannot reference a `net10.0` assembly; its scripting runtime targets .NET Standard 2.1. Because the Unity layer is deferred, this does not block the current release, but a future visual layer will need either a `netstandard2.1` interop surface over UrgentCare.Core or a Unity version with a newer scripting runtime. This is recorded in unity/README.md (T078).

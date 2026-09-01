@@ -4,8 +4,6 @@
 
 **Input**: Feature specification from `/specs/001-urgent-care-simulator/spec.md`
 
-**Note**: This template is filled in by the `/speckit-plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
-
 ## Summary
 
 The feature delivers a desktop urgent-care simulation that models patient arrival, queueing, triage, treatment, abandonment, and operational metrics. The design separates the simulation engine from the visualization and analysis layers so scenario tuning, parameter studies, and future Unity-based rendering can evolve without entangling the core logic.
@@ -26,7 +24,7 @@ The feature delivers a desktop urgent-care simulation that models patient arriva
 
 **Project Type**: desktop-app with simulation engine, configuration layer, and optional visual front end.
 
-**Performance Goals**: Simulate days or weeks of ED activity in accelerated time while preserving deterministic or seeded behavior for repeatable runs.
+**Performance Goals**: A 10080-minute (168-hour, one-week) horizon on the default scenario completes in under 10 seconds on the development machine, while preserving deterministic seeded behavior for repeatable runs. T081 verifies this budget and records the measured timing in quickstart.md.
 
 **Constraints**: Keep core simulation logic independent from UI timing; preserve explicit boundaries between patient generation, staffing logic, queue policy, telemetry, and visualization.
 
@@ -44,7 +42,7 @@ The feature delivers a desktop urgent-care simulation that models patient arriva
 
 **Pass**: Recovery and revertibility are supported by configuration-driven scenario resets, seeded runs, and versioned scenario data rather than by hard-coded assumptions.
 
-**Pass**: Commands and scenario actions remain discoverable and reproducible through a single local workflow and CI-aligned validation path.
+**Pass**: Commands and scenario actions remain discoverable and reproducible through a single local workflow and a CI-aligned validation path. The VS Code tasks (T009), the GitHub Actions workflow (T009a), and quickstart.md all invoke the same `dotnet restore`, `dotnet build`, and `dotnet test` commands against UrgentCare.sln.
 
 ## Project Structure
 
@@ -92,3 +90,5 @@ ED-DES/                              # git repository root; source, specs, and t
 ## Complexity Tracking
 
 > **No constitution violations require justification**
+
+**Recorded exception, Principle IX (value reaches the user)**: this release ships no packaging or distribution step. The simulator is a local learning and experimentation tool run from the repository with `dotnet run`, which is what "in the user's hands" means for this audience. A `dotnet publish` step is the path forward if the tool is ever distributed to users who do not have the source.

@@ -11,7 +11,7 @@ The simulation domain is organized around a small set of entities with explicit 
 | Field | Type | Description |
 |---|---|---|
 | id | string | Unique patient identifier |
-| urgency | int | Integer rating from 1 to 5 |
+| urgency | int | Triage acuity from 1 to 5 on the ESI scale, where 1 is most severe (resuscitation) and 5 is least severe (non-urgent) |
 | age | int | Patient age in years |
 | arrivalTime | double | Simulation time at which patient entered the system |
 | waitingTime | double | Current cumulative waiting duration |
@@ -26,7 +26,7 @@ The simulation domain is organized around a small set of entities with explicit 
 - One Patient may be in exactly one QueuePolicy ordering at a time.
 
 **Validation rules**:
-- urgency must be between 1 and 5
+- urgency must be between 1 and 5, where a lower value means a more severe presentation
 - abandonmentThreshold must be non-negative
 - serviceDuration must be greater than zero if treatment is required
 - completion and abandonment are terminal states
@@ -37,9 +37,9 @@ The simulation domain is organized around a small set of entities with explicit 
 |---|---|---|
 | id | string | Unique identifier for clinician or treatment resource |
 | type | enum | Nurse, Doctor, Intake, Room, etc. |
-| experience | double | Skill or experience rating |
-| efficiency | double | Current productivity multiplier |
-| fatigue | double | Time-dependent performance degradation factor |
+| experience | double | Skill rating in the range 0.0 to 1.0, configured per scenario |
+| efficiency | double | Derived productivity multiplier, clamped to [minEfficiency, maxEfficiency] (defaults 0.5 to 1.5) |
+| fatigue | double | Derived performance degradation in the range 0.0 to 1.0, accrued over minutes on shift |
 | currentState | enum | Available, Busy, Offline |
 | assignedPatient | Patient | Active patient if in treatment |
 | shiftStart | double | Time when the resource begins duty |
@@ -49,9 +49,22 @@ The simulation domain is organized around a small set of entities with explicit 
 - A CareResource may serve zero or more Patients over a run.
 
 **Validation rules**:
-- efficiency must be greater than zero
-- fatigue must be bounded to a realistic performance range
+- efficiency must be greater than zero and must stay within [minEfficiency, maxEfficiency]
+- fatigue must be within 0.0 and 1.0 inclusive
+- experience must be within 0.0 and 1.0 inclusive
 - assignedPatient is null when the resource is available
+- a CareResource serves at most one patient at a time; there is no per-resource capacity. Concurrency is expressed by the number of CareResource instances in the department (`resourceCount`)
+
+**Derived behavior** (parameters come from `resourceProfile` in contracts/simulation-config.md):
+
+```text
+fatigue(t)    = min(1.0, fatigueRatePerMinute * minutesSinceShiftStart)
+efficiency(t) = clamp(baseEfficiency * (1 + experienceBonus * experience) * (1 - fatigue(t)),
+                      minEfficiency, maxEfficiency)
+effectiveServiceDuration = sampledServiceDuration / efficiency(t)
+```
+
+`efficiency` and `fatigue` are recomputed when a resource starts a treatment; both are derived state and are never configured directly.
 
 ### Department
 
@@ -61,7 +74,7 @@ The simulation domain is organized around a small set of entities with explicit 
 | name | string | Human-readable name |
 | careResources | list | Nurses or treatment resources assigned to the department |
 | waitingArea | Queue | Main waiting queue for arriving patients |
-| rooms | list | Treatment rooms or staffed care positions |
+| rooms | list | Treatment rooms. A patient needs a free room as well as a free CareResource to enter treatment, unless the patient's urgency is at or below `roomBypassUrgency` |
 | queuePolicy | QueuePolicy | Active queue ordering rule |
 | config | ScenarioConfig | Current scenario and operational parameters |
 
