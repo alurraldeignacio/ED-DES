@@ -47,18 +47,18 @@ ED-DES/                              # git repository; all source lives here
 
 **Purpose**: Create the .NET 10 solution, projects, and VS Code tooling
 
-- [ ] T001 Create .NET 10 solution at UrgentCare.sln via `dotnet new sln`
-- [ ] T002 [P] Create net10.0 class library src/UrgentCare.Core/UrgentCare.Core.csproj with nullable enabled, and add it to UrgentCare.sln
-- [ ] T003 [P] Create net10.0 class library analysis/UrgentCare.Analysis/UrgentCare.Analysis.csproj referencing UrgentCare.Core, and add it to UrgentCare.sln
-- [ ] T004 [P] Create net10.0 console app src/UrgentCare.Cli/UrgentCare.Cli.csproj referencing UrgentCare.Core and UrgentCare.Analysis, and add it to UrgentCare.sln
-- [ ] T005 [P] Create xUnit project tests/unit/UrgentCare.Core.Tests/UrgentCare.Core.Tests.csproj referencing UrgentCare.Core, and add it to UrgentCare.sln
-- [ ] T005a [P] Create xUnit project tests/unit/UrgentCare.Analysis.Tests/UrgentCare.Analysis.Tests.csproj referencing UrgentCare.Analysis, and add it to UrgentCare.sln
-- [ ] T006 [P] Create xUnit project tests/integration/UrgentCare.Integration.Tests/UrgentCare.Integration.Tests.csproj referencing UrgentCare.Core, UrgentCare.Analysis, and UrgentCare.Cli, and add it to UrgentCare.sln
-- [ ] T007 Add MathNet.Numerics 5.0.0 PackageReference to analysis/UrgentCare.Analysis/UrgentCare.Analysis.csproj (Analysis only, so Core stays dependency-free)
-- [ ] T008 [P] Add .editorconfig with C# formatting rules and analyzer severities
-- [ ] T009 [P] Add .vscode/tasks.json and .vscode/launch.json exposing restore, build, test, and run as named commands (Constitution Principle X)
-- [ ] T009a [P] Add .github/workflows/ci.yml running the same `dotnet restore`, `dotnet build`, and `dotnet test` commands against UrgentCare.sln that T009 and quickstart.md expose locally (Constitution Principle X: the local command and the CI command must be the same)
-- [x] T010 [P] Add .gitignore covering bin/, obj/, .vs/, Unity Library/Temp artifacts, and the out-of-scope Simularg/ and SimulargPython/ directories so they stay on disk but out of the repository. **Already satisfied**: the root .gitignore exists and covers all of these; re-verify rather than recreate
+- [X] T001 Create .NET 10 solution at UrgentCare.sln via `dotnet new sln`
+- [X] T002 [P] Create net10.0 class library src/UrgentCare.Core/UrgentCare.Core.csproj with nullable enabled, and add it to UrgentCare.sln
+- [X] T003 [P] Create net10.0 class library analysis/UrgentCare.Analysis/UrgentCare.Analysis.csproj referencing UrgentCare.Core, and add it to UrgentCare.sln
+- [X] T004 [P] Create net10.0 console app src/UrgentCare.Cli/UrgentCare.Cli.csproj referencing UrgentCare.Core and UrgentCare.Analysis, and add it to UrgentCare.sln
+- [X] T005 [P] Create xUnit project tests/unit/UrgentCare.Core.Tests/UrgentCare.Core.Tests.csproj referencing UrgentCare.Core, and add it to UrgentCare.sln
+- [X] T005a [P] Create xUnit project tests/unit/UrgentCare.Analysis.Tests/UrgentCare.Analysis.Tests.csproj referencing UrgentCare.Analysis, and add it to UrgentCare.sln
+- [X] T006 [P] Create xUnit project tests/integration/UrgentCare.Integration.Tests/UrgentCare.Integration.Tests.csproj referencing UrgentCare.Core, UrgentCare.Analysis, and UrgentCare.Cli, and add it to UrgentCare.sln
+- [X] T007 Add MathNet.Numerics 5.0.0 PackageReference to analysis/UrgentCare.Analysis/UrgentCare.Analysis.csproj (Analysis only, so Core stays dependency-free)
+- [X] T008 [P] Add .editorconfig with C# formatting rules and analyzer severities
+- [X] T009 [P] Add .vscode/tasks.json and .vscode/launch.json exposing restore, build, test, and run as named commands (Constitution Principle X)
+- [X] T009a [P] Add .github/workflows/ci.yml running the same `dotnet restore`, `dotnet build`, and `dotnet test` commands against UrgentCare.sln that T009 and quickstart.md expose locally (Constitution Principle X: the local command and the CI command must be the same)
+- [X] T010 [P] Add .gitignore covering bin/, obj/, .vs/, Unity Library/Temp artifacts, and the out-of-scope Simularg/ and SimulargPython/ directories so they stay on disk but out of the repository. **Already satisfied**: the root .gitignore exists and covers all of these; re-verify rather than recreate
 
 ---
 
@@ -68,19 +68,19 @@ ED-DES/                              # git repository; all source lives here
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T011 [P] Define PatientState, ResourceState, CareResourceType, and SimulationStatus enums in src/UrgentCare.Core/Domain/Enums.cs per data-model.md state transitions
-- [ ] T012 [P] Define IRandomSource in src/UrgentCare.Core/Random/IRandomSource.cs (injected, never static, per Constitution Principle III)
-- [ ] T013 Implement SeededRandomSource in src/UrgentCare.Core/Random/SeededRandomSource.cs producing identical streams for identical seeds
-- [ ] T014 [P] Define IDistribution and IDistributionFactory abstractions in src/UrgentCare.Core/Distributions/IDistributionFactory.cs so Core stays free of MathNet
-- [ ] T015 Implement MathNetDistributionFactory in analysis/UrgentCare.Analysis/Distributions/MathNetDistributionFactory.cs building parameterized distributions from the `family` discriminator plus that family's required parameters (categorical, normal with optional truncation, lognormal, triangular, exponential) per contracts/simulation-config.md, rejecting an unknown family or missing parameters
-- [ ] T016 [P] Define ScenarioConfig (including the required `schemaVersion` field), ArrivalModelConfig, DepartmentConfig (including roomCount and roomBypassUrgency), ResourceProfileConfig, PatientModelConfig, DistributionConfig, and MetricsConfig records in src/UrgentCare.Core/Configuration/ScenarioConfig.cs mirroring contracts/simulation-config.md
-- [ ] T017 Implement ScenarioConfigLoader using System.Text.Json in src/UrgentCare.Core/Configuration/ScenarioConfigLoader.cs
-- [ ] T018 Implement ScenarioConfigValidator in src/UrgentCare.Core/Configuration/ScenarioConfigValidator.cs enforcing the contract rules: present and supported `schemaVersion` (reject an unsupported major version), unique scenarioId, integer seed, timeHorizon greater than zero, supported queuePolicy, non-negative resourceCount and roomCount, roomBypassUrgency within 0 to 5, a supported distribution `family` with its required parameters present, experience within 0.0 to 1.0, and minEfficiency not greater than maxEfficiency
-- [ ] T019 [P] Define the SimulationEvent telemetry record (runId, scenarioId, replicationIndex, timestamp, event type, patientId, resourceId, urgency, queueLength) in src/UrgentCare.Core/Events/SimulationEvent.cs. The correlation keys are required so events from batched scenarios (T061) and repeated replications (T072) stay distinguishable (Constitution Principle VI)
-- [ ] T020 [P] Define IEventSink in src/UrgentCare.Core/Events/IEventSink.cs
-- [ ] T021 Implement InMemoryEventLog in src/UrgentCare.Core/Events/InMemoryEventLog.cs as the event source all metrics derive from, and document its retention limit: it holds every event for the run, which is acceptable at the default scale (roughly 1000 patients per simulated week) but must be replaced by a streaming or windowed sink before long horizons or large replication batches
-- [ ] T022 [P] Add the default scenario file shared/config/default-scenario.json matching the example object in contracts/simulation-config.md, including `schemaVersion`
-- [ ] T023 [P] Add shared/schemas/simulation-config.schema.json describing the configuration contract, with `schemaVersion` as a required property
+- [X] T011 [P] Define PatientState, ResourceState, CareResourceType, and SimulationStatus enums in src/UrgentCare.Core/Domain/Enums.cs per data-model.md state transitions
+- [X] T012 [P] Define IRandomSource in src/UrgentCare.Core/Random/IRandomSource.cs (injected, never static, per Constitution Principle III)
+- [X] T013 Implement SeededRandomSource in src/UrgentCare.Core/Random/SeededRandomSource.cs producing identical streams for identical seeds
+- [X] T014 [P] Define IDistribution and IDistributionFactory abstractions in src/UrgentCare.Core/Distributions/IDistributionFactory.cs so Core stays free of MathNet
+- [X] T015 Implement MathNetDistributionFactory in analysis/UrgentCare.Analysis/Distributions/MathNetDistributionFactory.cs building parameterized distributions from the `family` discriminator plus that family's required parameters (categorical, normal with optional truncation, lognormal, triangular, exponential) per contracts/simulation-config.md, rejecting an unknown family or missing parameters
+- [X] T016 [P] Define ScenarioConfig (including the required `schemaVersion` field), ArrivalModelConfig, DepartmentConfig (including roomCount and roomBypassUrgency), ResourceProfileConfig, PatientModelConfig, DistributionConfig, and MetricsConfig records in src/UrgentCare.Core/Configuration/ScenarioConfig.cs mirroring contracts/simulation-config.md
+- [X] T017 Implement ScenarioConfigLoader using System.Text.Json in src/UrgentCare.Core/Configuration/ScenarioConfigLoader.cs
+- [X] T018 Implement ScenarioConfigValidator in src/UrgentCare.Core/Configuration/ScenarioConfigValidator.cs enforcing the contract rules: present and supported `schemaVersion` (reject an unsupported major version), unique scenarioId, integer seed, timeHorizon greater than zero, supported queuePolicy, non-negative resourceCount and roomCount, roomBypassUrgency within 0 to 5, a supported distribution `family` with its required parameters present, experience within 0.0 to 1.0, and minEfficiency not greater than maxEfficiency
+- [X] T019 [P] Define the SimulationEvent telemetry record (runId, scenarioId, replicationIndex, timestamp, event type, patientId, resourceId, urgency, queueLength) in src/UrgentCare.Core/Events/SimulationEvent.cs. The correlation keys are required so events from batched scenarios (T061) and repeated replications (T072) stay distinguishable (Constitution Principle VI)
+- [X] T020 [P] Define IEventSink in src/UrgentCare.Core/Events/IEventSink.cs
+- [X] T021 Implement InMemoryEventLog in src/UrgentCare.Core/Events/InMemoryEventLog.cs as the event source all metrics derive from, and document its retention limit: it holds every event for the run, which is acceptable at the default scale (roughly 1000 patients per simulated week) but must be replaced by a streaming or windowed sink before long horizons or large replication batches
+- [X] T022 [P] Add the default scenario file shared/config/default-scenario.json matching the example object in contracts/simulation-config.md, including `schemaVersion`
+- [X] T023 [P] Add shared/schemas/simulation-config.schema.json describing the configuration contract, with `schemaVersion` as a required property
 - [ ] T024 [P] Unit tests for configuration validation, including a missing or unsupported schemaVersion, missing arrival rates, and negative staffing, in tests/unit/UrgentCare.Core.Tests/ScenarioConfigValidatorTests.cs
 - [ ] T025 [P] Unit test asserting two SeededRandomSource instances with the same seed emit identical sequences in tests/unit/UrgentCare.Core.Tests/SeededRandomSourceTests.cs
 - [ ] T025a [P] Unit tests for MathNetDistributionFactory asserting each supported family (categorical, normal, lognormal, triangular, exponential) samples in range and is deterministic under a fixed IRandomSource, in tests/unit/UrgentCare.Analysis.Tests/MathNetDistributionFactoryTests.cs

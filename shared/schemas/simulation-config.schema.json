@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/alurraldeignacio/ED-DES/shared/schemas/simulation-config.schema.json",
+  "title": "Urgent Care Simulation Scenario",
+  "description": "Configuration contract for a scenario run. All simulated durations are in minutes; arrivalModel.baseRatePerHour is the one field expressed per hour.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "scenarioId",
+    "seed",
+    "timeHorizon",
+    "arrivalModel",
+    "department",
+    "resourceProfile",
+    "patientModel",
+    "metrics"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Semantic version of this contract. A loader rejects an unsupported major version.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "scenarioId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique identifier for the scenario run."
+    },
+    "seed": {
+      "type": "integer",
+      "description": "Random seed. Identical seeds reproduce identical runs."
+    },
+    "timeHorizon": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Length of the run in minutes of simulated time (10080 = 7 days)."
+    },
+    "arrivalModel": {
+      "type": "object",
+      "required": ["baseRatePerHour", "interarrivalDistribution"],
+      "additionalProperties": false,
+      "properties": {
+        "baseRatePerHour": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Expected arrivals per hour; the engine converts to a per-minute rate."
+        },
+        "hourlyVariation": { "type": "boolean" },
+        "dailyVariation": { "type": "boolean" },
+        "seasonalVariation": { "type": "boolean" },
+        "interarrivalDistribution": { "$ref": "#/$defs/distribution" }
+      }
+    },
+    "department": {
+      "type": "object",
+      "required": ["name", "resourceCount", "queuePolicy", "roomCount"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "resourceCount": { "type": "integer", "minimum": 0 },
+        "resourceType": {
+          "type": "string",
+          "enum": ["Nurse", "Doctor", "Intake", "Room"]
+        },
+        "queuePolicy": {
+          "type": "string",
+          "enum": ["FIFO", "UrgencyFirst", "UrgencyPlusWait"]
+        },
+        "roomCount": { "type": "integer", "minimum": 0 },
+        "roomBypassUrgency": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5,
+          "description": "Patients at or below this urgency bypass the room constraint. 0 disables the bypass."
+        }
+      }
+    },
+    "resourceProfile": {
+      "type": "object",
+      "required": ["baseEfficiency", "experience", "shiftLengthMinutes", "minEfficiency", "maxEfficiency"],
+      "additionalProperties": false,
+      "properties": {
+        "baseEfficiency": { "type": "number", "exclusiveMinimum": 0 },
+        "experience": { "type": "number", "minimum": 0, "maximum": 1 },
+        "experienceBonus": { "type": "number", "minimum": 0 },
+        "shiftLengthMinutes": { "type": "number", "exclusiveMinimum": 0 },
+        "fatigueRatePerMinute": { "type": "number", "minimum": 0 },
+        "minEfficiency": { "type": "number", "exclusiveMinimum": 0 },
+        "maxEfficiency": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "patientModel": {
+      "type": "object",
+      "required": [
+        "urgencyDistribution",
+        "ageDistribution",
+        "serviceDurationDistribution",
+        "abandonmentThresholdDistribution"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "urgencyDistribution": { "$ref": "#/$defs/distribution" },
+        "ageDistribution": { "$ref": "#/$defs/distribution" },
+        "serviceDurationDistribution": { "$ref": "#/$defs/distribution" },
+        "abandonmentThresholdDistribution": { "$ref": "#/$defs/distribution" }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "reportAverageWait": { "type": "boolean" },
+        "reportP95Wait": { "type": "boolean" },
+        "reportAbandonmentRate": { "type": "boolean" },
+        "reportUtilization": { "type": "boolean" }
+      }
+    }
+  },
+  "$defs": {
+    "distribution": {
+      "type": "object",
+      "required": ["family"],
+      "additionalProperties": false,
+      "properties": {
+        "family": {
+          "type": "string",
+          "enum": ["categorical", "normal", "lognormal", "triangular", "exponential"]
+        },
+        "categories": { "type": "array", "items": { "type": "number" }, "minItems": 1 },
+        "weights": { "type": "array", "items": { "type": "number", "minimum": 0 }, "minItems": 1 },
+        "mean": { "type": "number" },
+        "standardDeviation": { "type": "number", "exclusiveMinimum": 0 },
+        "mu": { "type": "number" },
+        "sigma": { "type": "number", "exclusiveMinimum": 0 },
+        "min": { "type": "number" },
+        "mode": { "type": "number" },
+        "max": { "type": "number" },
+        "rate": { "type": "number", "exclusiveMinimum": 0 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "family": { "const": "categorical" } }, "required": ["family"] },
+          "then": { "required": ["categories", "weights"] }
+        },
+        {
+          "if": { "properties": { "family": { "const": "normal" } }, "required": ["family"] },
+          "then": { "required": ["mean", "standardDeviation"] }
+        },
+        {
+          "if": { "properties": { "family": { "const": "lognormal" } }, "required": ["family"] },
+          "then": { "required": ["mu", "sigma"] }
+        },
+        {
+          "if": { "properties": { "family": { "const": "triangular" } }, "required": ["family"] },
+          "then": { "required": ["min", "mode", "max"] }
+        }
+      ]
+    }
+  }
+}
