@@ -85,6 +85,27 @@ public class ScenarioConfigValidatorTests
         Assert.Empty(result.Errors);
     }
 
+    [Theory]
+    [InlineData("reportAverageWait")]
+    [InlineData("reportP95Wait")]
+    [InlineData("reportAbandonmentRate")]
+    [InlineData("reportUtilization")]
+    public void DisablingAMetricRequiredBySc002_IsRejected(string flag)
+    {
+        var metrics = new MetricsConfig
+        {
+            ReportAverageWait = flag != "reportAverageWait",
+            ReportP95Wait = flag != "reportP95Wait",
+            ReportAbandonmentRate = flag != "reportAbandonmentRate",
+            ReportUtilization = flag != "reportUtilization"
+        };
+
+        var result = _validator.Validate(ValidConfig() with { Metrics = metrics });
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.Contains($"metrics.{flag} must be enabled"));
+    }
+
     [Fact]
     public void MissingSchemaVersion_IsRejected()
     {

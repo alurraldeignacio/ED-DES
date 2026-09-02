@@ -87,7 +87,7 @@ A user wants to run repeated simulations with the same inputs, compare aggregate
 
 - **Patient**: An individual simulated entity that arrives, waits, receives care, and exits the system, with urgency, age, and behavioral timing assumptions. Urgency follows the ESI convention: 1 is most severe, 5 is least severe.
 - **Care Resource**: A clinician or treatment resource that serves one patient at a time, with efficiency and time-dependent performance characteristics.
-- **Hospital Department**: The operational environment that contains queues, staff, rooms, and patient flow rules.
+- **Department**: The operational environment that contains queues, staff, rooms, and patient flow rules.
 - **Patient Generator**: The model responsible for generating arrival timing and patient attribute values according to configured distributions.
 - **Simulation**: The orchestration layer that advances time, schedules events, and enforces operational rules.
 - **Simulation Clock**: The time model that tracks the current simulated time and supports acceleration or pause behavior.
@@ -111,11 +111,13 @@ A user wants to run repeated simulations with the same inputs, compare aggregate
 - Patient arrival and service-time processes are assumed to be stochastic and configurable, even when empirical data is not yet available.
 - The simulation will treat operational assumptions as explicit configuration rather than hidden constants.
 - Triage acuity follows the ESI convention (1 most severe, 5 least severe), so a lower urgency value means a higher treatment priority.
-- Patients at or above a configured acuity bypass the treatment-room constraint, as a real department holds or clears a bay for a critical arrival. Triage itself is never room-constrained.
+- Patients whose urgency value is at or below the configured `roomBypassUrgency` (that is, the most acute) bypass the treatment-room constraint, as a real department holds or clears a bay for a critical arrival. Triage itself is never room-constrained.
 - This first version is intentionally limited to core flow logic and metrics and does not require hospital-grade clinical fidelity.
 
 ## Deferred Scope
 
 Concepts accepted as valuable but deliberately out of scope for this release. They are recorded here so they are not rediscovered as gaps during implementation.
 
-- **Patient care load and department capacity pool** (low priority). Each patient would carry a `careLoad` value sampled from a distribution conditioned on case complexity or urgency, and the department would hold a finite total load capacity. A patient would enter treatment only when a care resource is free *and* the department has enough remaining capacity for that patient's load. This would add an intensity-based congestion mechanism alongside the current headcount-based one, in which case complexity affects only `serviceDuration`. Revisiting this would also give `roomCount` an enforced operational meaning.
+- **A more realistic abandonment model** (low priority). Two limitations of the current model are known and accepted for now. First, patience is drawn from one distribution for every patient, so tolerance is uncorrelated with triage acuity; the observed concentration of abandonment in ESI 4 and 5 is emergent from waiting time rather than modelled directly. Second, abandonment is a hard deadline fixed at arrival rather than a hazard process, so it cannot represent a patient who leaves early because the waiting room looked full. A future model would give patience a per-acuity distribution and re-express leaving as a time-varying hazard influenced by observable queue state.
+
+- **Patient care load and department capacity pool** (low priority). Each patient would carry a `careLoad` value sampled from a distribution conditioned on case complexity or urgency, and the department would hold a finite total load capacity. A patient would enter treatment only when a care resource is free *and* the department has enough remaining capacity for that patient's load. This would add an intensity-based congestion mechanism alongside the existing headcount and room-occupancy constraints, in which case complexity affects only `serviceDuration`.

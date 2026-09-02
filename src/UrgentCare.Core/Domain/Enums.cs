@@ -28,8 +28,7 @@ public enum CareResourceType
 {
     Nurse,
     Doctor,
-    Intake,
-    Room
+    Intake
 }
 
 /// <summary>

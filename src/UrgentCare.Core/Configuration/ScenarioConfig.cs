@@ -123,7 +123,11 @@ public sealed record DistributionConfig
     public double? Rate { get; init; }
 }
 
-/// <summary>Which outcomes the run reports. A disabled metric is not reported or exported.</summary>
+/// <summary>
+/// Which outcomes the run reports. A disabled metric is reported as null rather than omitted,
+/// so the export keeps the same columns across runs. The four flags below are required by
+/// SC-002 and are rejected by ScenarioConfigValidator if switched off.
+/// </summary>
 public sealed record MetricsConfig
 {
     public bool ReportAverageWait { get; init; } = true;

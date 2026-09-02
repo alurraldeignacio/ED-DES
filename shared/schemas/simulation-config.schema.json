@@ -61,7 +61,7 @@
         "resourceCount": { "type": "integer", "minimum": 0 },
         "resourceType": {
           "type": "string",
-          "enum": ["Nurse", "Doctor", "Intake", "Room"]
+          "enum": ["Nurse", "Doctor", "Intake"]
         },
         "queuePolicy": {
           "type": "string",

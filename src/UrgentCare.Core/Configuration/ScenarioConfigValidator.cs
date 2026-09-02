@@ -47,6 +47,7 @@ public sealed class ScenarioConfigValidator
         ValidateArrivalModel(config.ArrivalModel, errors);
         ValidateResourceProfile(config.ResourceProfile, errors);
         ValidatePatientModel(config.PatientModel, errors);
+        ValidateMetrics(config.Metrics, errors);
 
         return errors.Count == 0 ? ValidationResult.Success() : ValidationResult.Failure(errors);
     }
@@ -280,6 +281,29 @@ public sealed class ScenarioConfigValidator
             && !(min <= mode && mode <= max))
         {
             errors.Add($"{path} requires min <= mode <= max, but was {min}, {mode}, {max}.");
+        }
+    }
+
+    /// <summary>
+    /// SC-002 compares every scenario on wait, P95 wait, abandonment and utilization, so a run
+    /// that switched one off would not be comparable. The contract requires all four to stay on.
+    /// </summary>
+    private static void ValidateMetrics(MetricsConfig metrics, List<string> errors)
+    {
+        (string Name, bool Enabled)[] required =
+        [
+            ("reportAverageWait", metrics.ReportAverageWait),
+            ("reportP95Wait", metrics.ReportP95Wait),
+            ("reportAbandonmentRate", metrics.ReportAbandonmentRate),
+            ("reportUtilization", metrics.ReportUtilization)
+        ];
+
+        foreach (var (name, enabled) in required)
+        {
+            if (!enabled)
+            {
+                errors.Add($"metrics.{name} must be enabled; SC-002 compares every scenario on it.");
+            }
         }
     }
 

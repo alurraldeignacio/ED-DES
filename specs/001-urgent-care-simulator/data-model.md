@@ -36,7 +36,7 @@ The simulation domain is organized around a small set of entities with explicit 
 | Field | Type | Description |
 |---|---|---|
 | id | string | Unique identifier for clinician or treatment resource |
-| type | enum | Nurse, Doctor, Intake, Room, etc. |
+| type | enum | Nurse, Doctor, Intake. Rooms are not care resources; they are a Department occupancy pool sized by `roomCount` |
 | experience | double | Skill rating in the range 0.0 to 1.0, configured per scenario |
 | efficiency | double | Derived productivity multiplier, clamped to [minEfficiency, maxEfficiency] (defaults 0.5 to 1.5) |
 | fatigue | double | Derived performance degradation in the range 0.0 to 1.0, accrued over minutes on shift |
@@ -99,9 +99,9 @@ effectiveServiceDuration = sampledServiceDuration / efficiency(t)
 | Field | Type | Description |
 |---|---|---|
 | id | string | Unique identifier |
-| rate | double | Baseline patient arrival rate |
-| timeProfile | object | Hourly, daily, seasonal variation model |
-| distribution | DistributionModel | Probability model for arrival spacing and patient attributes |
+| baseRatePerHour | double | Baseline patient arrival rate per hour |
+| hourlyVariation, dailyVariation, seasonalVariation | bool | Toggles for the non-stationary time profile applied over `baseRatePerHour` |
+| interarrivalDistribution | DistributionModel | Probability model for the spacing between arrivals |
 
 **Relationships**:
 - One Department uses one or more ArrivalModel definitions depending on the scenario.
@@ -117,9 +117,13 @@ effectiveServiceDuration = sampledServiceDuration / efficiency(t)
 | p95WaitTime | double | 95th percentile wait time |
 | throughput | double | Completed patients per time unit |
 | utilization | map | Per-resource utilization and averages |
+| averageQueueLength | double | Mean waiting-area length over the run, derived from the event stream |
+| maxQueueLength | int | Peak waiting-area length observed during the run |
 
 **Relationships**:
 - One StatisticsCollector belongs to one Simulation run.
+
+**Note**: percentile computation is a single shared implementation owned by Core. Both the within-run P95 above and the across-replication P95 in the Analysis project call it, so the two figures always use the same interpolation rule.
 
 ### Simulation
 
@@ -133,19 +137,20 @@ effectiveServiceDuration = sampledServiceDuration / efficiency(t)
 | status | enum | Idle, Running, Paused, Complete |
 
 **Relationships**:
-- One Simulation owns one Department and one MetricsCollector.
+- One Simulation owns one Department and one StatisticsCollector.
 - One Simulation can be re-run using a new scenario configuration or seed.
 
 ## State transitions
 
 ### Patient lifecycle
-- Created -> Waiting -> InTreatment -> Completed
-- Created -> Waiting -> Abandoned
-- Waiting -> InTreatment may be entered only when a resource is available
+- Waiting -> InTreatment -> Completed
+- Waiting -> Abandoned
+- A patient is created directly in the Waiting state on arrival; there is no separate Created state
+- Waiting -> InTreatment may be entered only when a care resource is free and a treatment room is free, unless the patient's urgency is at or below `roomBypassUrgency`
 
 ### Resource lifecycle
 - Available -> Busy -> Available
-- Unavailable states can be introduced for offline or maintenance periods
+- Offline covers a resource outside its shift or otherwise unavailable, and is declared in the enum above
 
 ### Simulation lifecycle
 - Idle -> Running -> Paused -> Running -> Complete

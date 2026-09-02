@@ -135,6 +135,13 @@ Fatigue accrues across the *current* shift and resets when the next one begins, 
 - `baseEfficiency`, `minEfficiency`, and `maxEfficiency` MUST be greater than zero, with `minEfficiency <= maxEfficiency`.
 - `metrics` MUST enable at least the outcomes required by SC-002: average wait, P95 wait, abandonment rate, and utilization.
 
+## Event stream export
+
+When the event sink writes to a file, the file MUST open with a single header record carrying
+`schemaVersion` and the `runId`, and every event record follows after it. The version belongs to
+the file, not to the individual event, so `SimulationEvent` stays a lightweight in-process record.
+A reader MUST reject a file whose major version it does not support.
+
 ## Result export
 
-Result files MUST include aggregated summary metrics for waiting time, P95 waiting time, abandonment rate, utilization, and throughput. Export format may be JSON or CSV, but the output schema MUST remain consistent across scenario runs. Every exported result MUST carry the `schemaVersion` of the configuration that produced it, so a consumer can tell which contract version the numbers were produced under.
+Result files MUST include aggregated summary metrics for waiting time, P95 waiting time, abandonment rate, utilization, throughput, and queue length (average and maximum). Export format may be JSON or CSV, but the output schema MUST remain consistent across scenario runs. Every exported result MUST carry the `schemaVersion` of the configuration that produced it, so a consumer can tell which contract version the numbers were produced under. The exported column set MUST NOT vary with `metrics`: a metric disabled there is exported as `null` rather than omitted, so results from different scenario runs stay directly comparable.

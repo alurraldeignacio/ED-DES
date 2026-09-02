@@ -41,6 +41,16 @@
 - Compute statistics only in the UI: rejected because it impedes headless simulation and scenario comparison.
 - Record ad hoc logs only: rejected because it makes verification and aggregation harder.
 
+## Decision: Version the event file, not the individual event
+
+**Decision**: `SimulationEvent` carries no schema version. When the event sink writes to a file, the file opens with a header record holding `schemaVersion` and `runId`, and a reader rejects a major version it does not understand.
+
+**Rationale**: Constitution Principle IV requires a versioned schema at every producer/consumer boundary, and T080's file sink is such a boundary. Putting the version on the file satisfies that at the point where persistence actually happens, while keeping the event a small in-process record that is constructed on every arrival, treatment and abandonment. Stamping an identical version onto millions of records would pay for the same information over and over.
+
+**Alternatives considered**:
+- Add a version field to `SimulationEvent`: rejected as repeated data on a hot path, and it would touch every emit site for no in-process benefit.
+- Leave the stream unversioned entirely: rejected because a persisted file with no version is exactly the failure Principle IV exists to prevent.
+
 ## Decision: Treat Unity as a presentation layer, not a model authority
 
 **Decision**: Unity or a desktop visual layer renders simulation state but does not own the business rules or maintain authoritative simulation state.

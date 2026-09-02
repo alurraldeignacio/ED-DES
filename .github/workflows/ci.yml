@@ -26,5 +26,7 @@ jobs:
       - name: Build
         run: dotnet build UrgentCare.sln --no-restore
 
+      # --no-build only reuses the previous step's output; the command is otherwise the
+      # same `dotnet test UrgentCare.sln` documented in quickstart.md and .vscode/tasks.json.
       - name: Test
         run: dotnet test UrgentCare.sln --no-build

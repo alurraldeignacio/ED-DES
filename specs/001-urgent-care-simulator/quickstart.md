@@ -18,13 +18,17 @@ Validate the MVP simulation end-to-end by running a scenario with patient arriva
    dotnet restore UrgentCare.sln
    dotnet build UrgentCare.sln
    ```
-2. Run the scenario in console or headless mode.
+2. Run the test suite. This is the same command CI runs (Constitution Principle X).
+   ```bash
+   dotnet test UrgentCare.sln
+   ```
+3. Run the scenario in console or headless mode.
    ```bash
    dotnet run --project src/UrgentCare.Cli/UrgentCare.Cli.csproj -- --scenario default
    ```
-3. Review the output metrics for arrivals, waiting time, abandonment, throughput, and utilization.
-4. Repeat the same scenario with a different seed or staffing count to compare results.
-5. Validate the queue policy change by re-running the scenario with urgency-based ordering.
+4. Review the output metrics for arrivals, waiting time, abandonment, throughput, and utilization.
+5. Repeat the same scenario with a different seed or staffing count to compare results.
+6. Validate the queue policy change by re-running the scenario with urgency-based ordering.
 
 ## Measured performance
 

@@ -16,7 +16,7 @@ The feature delivers a desktop urgent-care simulation that models patient arriva
 
 **Storage**: Local configuration files and in-memory simulation state for MVP; optional JSON/CSV exports for scenario runs and metrics.
 
-**Testing**: xUnit or NUnit for simulation logic, probability sampling, and analysis checks, plus integration tests around scenario results and queue rule behavior.
+**Testing**: xUnit for simulation logic, probability sampling, and analysis checks, plus integration tests around scenario results and queue rule behavior.
 
 **Tooling**: Visual Studio Code with the C# Dev Kit as the primary editor; `dotnet` CLI for restore, build, test, and run.
 
@@ -71,13 +71,10 @@ ED-DES/                              # git repository root; source, specs, and t
 │       ├── Distributions/
 │       ├── Scenarios/
 │       └── Metrics/
-├── unity/                           # optional Unity scene and visual layer
-│   ├── Assets/
-│   └── ProjectSettings/
+├── unity/                           # deferred this release; only README.md exists (T078)
 ├── shared/                          # configuration and contracts
 │   ├── config/
-│   ├── schemas/
-│   └── metrics/
+│   └── schemas/
 ├── specs/001-urgent-care-simulator/ # feature documents
 │   └── ...
 └── tests/
@@ -92,3 +89,5 @@ ED-DES/                              # git repository root; source, specs, and t
 > **No constitution violations require justification**
 
 **Recorded exception, Principle IX (value reaches the user)**: this release ships no packaging or distribution step. The simulator is a local learning and experimentation tool run from the repository with `dotnet run`, which is what "in the user's hands" means for this audience. A `dotnet publish` step is the path forward if the tool is ever distributed to users who do not have the source.
+
+**Recorded exception, Principle VII (recovery and revertibility)**: the feature-flag gating and exercised-rollback clauses do not apply here. This is a local command-line tool with no deployment surface, no live traffic, and no persistent production state, so reverting means checking out an earlier commit and re-running. Recovery inside the tool is covered by seeded, configuration-driven runs that reproduce exactly.
