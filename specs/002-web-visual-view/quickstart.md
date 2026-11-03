@@ -48,3 +48,15 @@ The automated equivalent of steps 7 and 8 is `CliParityTests` and `VisualSession
 - No browser console errors.
 
 At 60 min/s one real second covers an hour, so many tokens are mid-move at any instant; the picture settles when paused.
+
+**2026-11-04, US2 and US3 (T029, T036), steps 3 and 5 to 9.** Same setup, 1440 × 800 viewport:
+
+- Step 3, now by stepping: after 12 Steps (Day 1, 01:15) both rooms were full and an ESI 1 patient was treated by R1 under "No room (bypass)". The MVP deviation is closed.
+- Step 5: three Steps moved the clock to 00:01, 00:20 and 00:21 and left the run paused.
+- Step 6: 119 simulated minutes passed in 2 s at 60 min/s; after switching to 1440 min/s mid-run, 2,751 passed in the next 2 s with no restart.
+- Step 7: Jump to end matched all ten CLI headless metrics for `default` (1066 arrivals, 973 completed, 80 abandoned, 37.3 / 172.5 min wait, 7.5 %, 65.3 %, 5.79/h, 4.3 avg, 26 peak) and for `lean` (1066, 859, 195, 79.4 / 180.0 min, 18.3 %, 87.2 %, 5.11/h, 8.4, 33). Jump to end took 0.2 to 0.3 s including the redraw.
+- Step 8: Restart then Jump to end reproduced identical metrics.
+- Step 9: `abc` showed "The seed must be a whole number between -2147483648 and 2147483647." and kept seed 12345; `7` + Enter applied the seed, cleared the message, and gave a different run (1074 arrivals).
+- No browser console errors.
+
+Fixed during this pass: new patient tokens grew in from the stage's top-left corner because `scale` was applied on top of a `transform` used for position; positions now use the `translate` property, so tokens grow in place.

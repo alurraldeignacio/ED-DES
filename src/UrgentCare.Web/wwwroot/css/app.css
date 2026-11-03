@@ -67,7 +67,7 @@ body {
 }
 
 .page {
-    max-width: calc(29 * var(--cell) + 32px);
+    max-width: calc(29 * var(--cell) + 400px);
     margin: 0 auto;
     padding: 16px;
 }
@@ -118,6 +118,104 @@ button:disabled {
 
 .status {
     color: var(--muted);
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    margin-bottom: 14px;
+}
+
+.controls label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+}
+
+.controls .divider {
+    width: 1px;
+    align-self: stretch;
+    background: var(--line);
+    margin: 0 4px;
+}
+
+.controls input.seed {
+    width: 9ch;
+}
+
+.controls input[aria-invalid="true"] {
+    border-color: var(--esi-1);
+}
+
+.error {
+    margin: -6px 0 12px;
+    color: var(--esi-1);
+}
+
+/* The department and the metrics side by side when there is room, stacked otherwise. */
+.workspace {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.workspace .stage-scroll {
+    flex: 0 1 auto;
+    max-width: 100%;
+}
+
+.metrics-panel {
+    flex: 1 1 240px;
+    max-width: 360px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    padding: 10px 14px;
+    font-size: 0.9rem;
+}
+
+.metrics-panel h2 {
+    margin: 4px 0 6px;
+    font-size: 1rem;
+}
+
+.metrics-panel h2 .note {
+    font-weight: 400;
+}
+
+.metrics-panel .note {
+    color: var(--muted);
+}
+
+.metrics-panel dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 12px;
+    margin: 0 0 10px;
+}
+
+.metrics-panel dt {
+    color: var(--muted);
+}
+
+.metrics-panel dd {
+    margin: 0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+select,
+input {
+    font: inherit;
+    padding: 5px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink);
 }
 
 /* The stage: everything is placed in grid cells so one variable scales the whole picture. */
@@ -259,8 +357,10 @@ button:disabled {
     font-weight: 700;
     font-size: calc(0.42 * var(--cell));
     border: 1px solid rgba(0, 0, 0, 0.25);
-    transform: translate(calc((var(--x) + 0.1) * var(--cell)), calc((var(--y) + 0.1) * var(--cell)));
-    transition: transform 350ms ease-in-out, opacity 350ms;
+    /* The translate property, not transform: individual transforms apply translate before
+       scale, so the enter animation grows a token in place instead of from the stage corner. */
+    translate: calc((var(--x) + 0.1) * var(--cell)) calc((var(--y) + 0.1) * var(--cell));
+    transition: translate 350ms ease-in-out, opacity 350ms;
     animation: token-enter 300ms ease-out;
     z-index: 2;
     cursor: default;

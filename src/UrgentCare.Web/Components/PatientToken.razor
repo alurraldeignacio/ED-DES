@@ -3,7 +3,7 @@
 
 @* One patient. The ESI number is printed, not only coloured, so urgency reads without colour
    (FR-007). Position is set in grid cells through CSS variables; the stylesheet turns it into
-   a transform, so a change of place animates. *@
+   a translate, so a change of place animates. *@
 <div class="token esi-@Patient.Urgency @(Patient.Urgency <= 2 ? "acute" : null) @Class"
      style="--x: @Cells(X); --y: @Cells(Y);"
      title="@Title">@Patient.Urgency</div>

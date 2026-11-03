@@ -1,6 +1,7 @@
 using UrgentCare.Core;
 using UrgentCare.Core.Distributions;
 using UrgentCare.Core.Events;
+using UrgentCare.Core.Metrics;
 
 namespace UrgentCare.Web.Session;
 
@@ -25,6 +26,10 @@ public sealed class VisualSession
     /// </summary>
     public const double MaxFrameSeconds = 0.25;
 
+    /// <summary>Playback speeds offered to the user, in simulated minutes per real second.</summary>
+    public static IReadOnlyList<double> SpeedPresets { get; } = [1, 10, 60, 240, 1440];
+
+    private readonly IDistributionFactory _distributionFactory;
     private bool _begun;
     private double _speed = 60.0;
 
@@ -35,17 +40,17 @@ public sealed class VisualSession
 
         Scenario = scenario;
         Seed = seed;
-        Log = new InMemoryEventLog();
-        Engine = SimulationEngine.Create(scenario.Config, distributionFactory, Log, seed: seed);
+        _distributionFactory = distributionFactory;
+        (Engine, Log) = BuildRun();
     }
 
     public BundledScenario Scenario { get; }
 
     public int Seed { get; }
 
-    public SimulationEngine Engine { get; }
+    public SimulationEngine Engine { get; private set; }
 
-    public InMemoryEventLog Log { get; }
+    public InMemoryEventLog Log { get; private set; }
 
     public PlaybackState PlaybackState { get; private set; } = PlaybackState.Idle;
 
@@ -71,6 +76,17 @@ public sealed class VisualSession
     }
 
     private double TimeHorizon => Scenario.Config.TimeHorizon;
+
+    /// <summary>
+    /// Metrics so far, recomputed from the event log by the same collector the CLI uses. Once the
+    /// run is complete this is exactly the CLI's call, over the full horizon (FR-012,
+    /// research.md §6).
+    /// </summary>
+    public SimulationMetrics Metrics =>
+        new StatisticsCollector(Scenario.Config.Metrics).Collect(
+            Log.Events,
+            PlaybackState == PlaybackState.Complete ? TimeHorizon : DisplayTime,
+            Scenario.Config.Department.ResourceCount);
 
     public void Play()
     {
@@ -116,7 +132,49 @@ public sealed class VisualSession
         }
     }
 
+    /// <summary>Processes exactly one engine event and leaves the run paused (FR-009, SC-004).</summary>
+    public void Step()
+    {
+        if (PlaybackState == PlaybackState.Complete)
+        {
+            return;
+        }
+
+        if (ProcessOneEvent())
+        {
+            PlaybackState = PlaybackState.Paused;
+        }
+    }
+
+    /// <summary>Runs every remaining event and shows the final state.</summary>
+    public void JumpToEnd()
+    {
+        while (PlaybackState != PlaybackState.Complete)
+        {
+            ProcessOneEvent();
+        }
+    }
+
+    /// <summary>
+    /// Starts the same scenario and seed again from time zero. The engine and log are rebuilt
+    /// rather than rewound, so the new run cannot inherit anything from the old one.
+    /// </summary>
+    public void Restart()
+    {
+        (Engine, Log) = BuildRun();
+        _begun = false;
+        DisplayTime = 0.0;
+        PlaybackState = PlaybackState.Idle;
+    }
+
     public DepartmentSnapshot Snapshot() => DepartmentSnapshot.From(this);
+
+    private (SimulationEngine Engine, InMemoryEventLog Log) BuildRun()
+    {
+        var log = new InMemoryEventLog();
+        var engine = SimulationEngine.Create(Scenario.Config, _distributionFactory, log, seed: Seed);
+        return (engine, log);
+    }
 
     /// <summary>
     /// Runs exactly one engine event. When none is left the session completes and the clock

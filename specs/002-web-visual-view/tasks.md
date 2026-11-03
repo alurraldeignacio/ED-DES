@@ -94,14 +94,14 @@ description: "Task list for the web visual view"
 
 ### Tests for User Story 2
 
-- [ ] T025 [P] [US2] Add control tests to `tests/unit/UrgentCare.Web.Tests/VisualSessionTests.cs`: `Step()` from Idle begins the run and adds exactly the events of one `RunOneEvent()` to the log, leaving state Paused; `Step()` when no events remain moves to Complete; changing `Speed` while Playing keeps the same engine instance and the final event log equals an uninterrupted run's; `JumpToEnd()` reaches Complete with `DisplayTime == TimeHorizon`; `Restart()` returns to Idle with a new engine and empty log, and a subsequent `JumpToEnd()` produces an event sequence identical (type, time, patient, resource) to the first run
+- [X] T025 [P] [US2] Add control tests to `tests/unit/UrgentCare.Web.Tests/VisualSessionTests.cs`: `Step()` from Idle begins the run and adds exactly the events of one `RunOneEvent()` to the log, leaving state Paused; `Step()` when no events remain moves to Complete; changing `Speed` while Playing keeps the same engine instance and the final event log equals an uninterrupted run's; `JumpToEnd()` reaches Complete with `DisplayTime == TimeHorizon`; `Restart()` returns to Idle with a new engine and empty log, and a subsequent `JumpToEnd()` produces an event sequence identical (type, time, patient, resource) to the first run
 
 ### Implementation for User Story 2
 
-- [ ] T026 [US2] Add `Step()`, `JumpToEnd()`, `Restart()` and the `SpeedPresets` constant (1, 10, 60, 240, 1440) to `src/UrgentCare.Web/Session/VisualSession.cs` following the transitions in data-model.md; `Restart()` rebuilds engine and log from the same scenario and seed. T025 passes
-- [ ] T027 [US2] Create `src/UrgentCare.Web/Components/ControlBar.razor` with Play/Pause, Step, a speed selector over `SpeedPresets` (label "min/s"), Jump to end and Restart; buttons disabled where the state makes them meaningless (Step and Play disabled when Complete); raises callbacks to the page
-- [ ] T028 [US2] Replace the Play/Pause button in `src/UrgentCare.Web/Pages/Home.razor` with `ControlBar`, wiring each callback to the session and re-rendering after Step, Jump to end and Restart
-- [ ] T029 [US2] Validate quickstart steps 5, 6 and 8 in the browser
+- [X] T026 [US2] Add `Step()`, `JumpToEnd()`, `Restart()` and the `SpeedPresets` constant (1, 10, 60, 240, 1440) to `src/UrgentCare.Web/Session/VisualSession.cs` following the transitions in data-model.md; `Restart()` rebuilds engine and log from the same scenario and seed. T025 passes
+- [X] T027 [US2] Create `src/UrgentCare.Web/Components/ControlBar.razor` with Play/Pause, Step, a speed selector over `SpeedPresets` (label "min/s"), Jump to end and Restart; buttons disabled where the state makes them meaningless (Step and Play disabled when Complete); raises callbacks to the page
+- [X] T028 [US2] Replace the Play/Pause button in `src/UrgentCare.Web/Pages/Home.razor` with `ControlBar`, wiring each callback to the session and re-rendering after Step, Jump to end and Restart
+- [X] T029 [US2] Validate quickstart steps 5, 6 and 8 in the browser
 
 **Checkpoint**: Full pace control on top of the MVP.
 
@@ -115,16 +115,16 @@ description: "Task list for the web visual view"
 
 ### Tests for User Story 3
 
-- [ ] T030 [P] [US3] Write `tests/unit/UrgentCare.Web.Tests/CliParityTests.cs`: for each bundled scenario with its own seed, and for `default` with seeds 7 and 2024, a session run with `JumpToEnd()` reports `SimulationMetrics` equal, field by field (including `UtilizationByResource` contents), to the CLI headless computation: `SimulationEngine.Create(config, new MathNetDistributionFactory(), log, seed: s).Run()` then `new StatisticsCollector(config.Metrics).Collect(log.Events, config.TimeHorizon, config.Department.ResourceCount)`
-- [ ] T031 [P] [US3] Add metrics and seed tests to `tests/unit/UrgentCare.Web.Tests/VisualSessionTests.cs`: mid-run `Metrics` equals `Collect(log.Events, DisplayTime, resourceCount)`; at Complete it uses `TimeHorizon`; `SeedInput.TryParse` accepts whole numbers in `int` range and rejects `abc`, `1.5`, empty and `99999999999` with a message
+- [X] T030 [P] [US3] Write `tests/unit/UrgentCare.Web.Tests/CliParityTests.cs`: for each bundled scenario with its own seed, and for `default` with seeds 7 and 2024, a session run with `JumpToEnd()` reports `SimulationMetrics` equal, field by field (including `UtilizationByResource` contents), to the CLI headless computation: `SimulationEngine.Create(config, new MathNetDistributionFactory(), log, seed: s).Run()` then `new StatisticsCollector(config.Metrics).Collect(log.Events, config.TimeHorizon, config.Department.ResourceCount)`
+- [X] T031 [P] [US3] Add metrics and seed tests to `tests/unit/UrgentCare.Web.Tests/VisualSessionTests.cs`: mid-run `Metrics` equals `Collect(log.Events, DisplayTime, resourceCount)`; at Complete it uses `TimeHorizon`; `SeedInput.TryParse` accepts whole numbers in `int` range and rejects `abc`, `1.5`, empty and `99999999999` with a message
 
 ### Implementation for User Story 3
 
-- [ ] T032 [US3] Add a `Metrics` property to `src/UrgentCare.Web/Session/VisualSession.cs` (collect over `DisplayTime`, or `TimeHorizon` when Complete) and expose it on `DepartmentSnapshot` in `src/UrgentCare.Web/Session/DepartmentSnapshot.cs`; add a static `SeedInput.TryParse(string, out int, out string? error)` in `src/UrgentCare.Web/Session/SeedInput.cs`. T030 and T031 pass
-- [ ] T033 [P] [US3] Create `src/UrgentCare.Web/Components/MetricsPanel.razor`: the scenario's settings (horizon, staffing, rooms, bypass threshold, queue policy) and the metrics table from contracts/visual-session.md with the same labels and format strings as the CLI, hiding metrics the scenario switched off and marking mid-run figures "so far"
-- [ ] T034 [US3] Add a scenario dropdown (all `BundledScenarios`) and a seed text box with Apply to `src/UrgentCare.Web/Components/ControlBar.razor`; on change, `src/UrgentCare.Web/Pages/Home.razor` builds a new `VisualSession` (Idle); an invalid seed shows the `SeedInput` message and keeps the previous seed
-- [ ] T035 [US3] Place `MetricsPanel` beside `DepartmentView` in `src/UrgentCare.Web/Pages/Home.razor` and style it in `src/UrgentCare.Web/wwwroot/css/app.css`
-- [ ] T036 [US3] Validate quickstart steps 7 and 9 in the browser against `dotnet run --project src/UrgentCare.Cli -- --scenario default --headless` and `--scenario lean --headless`
+- [X] T032 [US3] Add a `Metrics` property to `src/UrgentCare.Web/Session/VisualSession.cs` (collect over `DisplayTime`, or `TimeHorizon` when Complete) and expose it on `DepartmentSnapshot` in `src/UrgentCare.Web/Session/DepartmentSnapshot.cs`; add a static `SeedInput.TryParse(string, out int, out string? error)` in `src/UrgentCare.Web/Session/SeedInput.cs`. T030 and T031 pass
+- [X] T033 [P] [US3] Create `src/UrgentCare.Web/Components/MetricsPanel.razor`: the scenario's settings (horizon, staffing, rooms, bypass threshold, queue policy) and the metrics table from contracts/visual-session.md with the same labels and format strings as the CLI, hiding metrics the scenario switched off and marking mid-run figures "so far"
+- [X] T034 [US3] Add a scenario dropdown (all `BundledScenarios`) and a seed text box with Apply to `src/UrgentCare.Web/Components/ControlBar.razor`; on change, `src/UrgentCare.Web/Pages/Home.razor` builds a new `VisualSession` (Idle); an invalid seed shows the `SeedInput` message and keeps the previous seed
+- [X] T035 [US3] Place `MetricsPanel` beside `DepartmentView` in `src/UrgentCare.Web/Pages/Home.razor` and style it in `src/UrgentCare.Web/wwwroot/css/app.css`
+- [X] T036 [US3] Validate quickstart steps 7 and 9 in the browser against `dotnet run --project src/UrgentCare.Cli -- --scenario default --headless` and `--scenario lean --headless`
 
 **Checkpoint**: All three stories work; parity with the CLI is proven by test and by hand.
 

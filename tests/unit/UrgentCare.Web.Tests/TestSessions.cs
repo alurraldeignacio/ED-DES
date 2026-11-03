@@ -1,4 +1,5 @@
 using UrgentCare.Analysis.Distributions;
+using UrgentCare.Core.Events;
 using UrgentCare.Web.Session;
 
 namespace UrgentCare.Web.Tests;
@@ -34,5 +35,28 @@ internal static class TestSessions
         }
 
         return condition(session);
+    }
+
+    /// <summary>The fields that define a run's event sequence, without the per-run identifier.</summary>
+    public static List<(double, SimulationEventType, string?, string?)> Fingerprint(InMemoryEventLog log) =>
+        [.. log.Events.Select(e => (e.Timestamp, e.Type, e.PatientId, e.ResourceId))];
+
+    /// <summary>
+    /// Plays one frame that stops between the run's last event and its horizon, so the session is
+    /// still Playing with nothing left to process.
+    /// </summary>
+    public static VisualSession PlayPastTheLastEvent(string scenarioName)
+    {
+        var probe = Create(scenarioName);
+        probe.JumpToEnd();
+        // The clock, not the log: the last event processed may be a stale check that emits nothing.
+        var lastEvent = probe.Engine.Clock.CurrentTime;
+        var horizon = probe.Scenario.Config.TimeHorizon;
+
+        var session = Create(scenarioName);
+        session.Speed = ((lastEvent + horizon) / 2) / VisualSession.MaxFrameSeconds;
+        session.Play();
+        session.Advance(VisualSession.MaxFrameSeconds);
+        return session;
     }
 }
