@@ -1,0 +1,37 @@
+# Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+
+# Visual Studio / Rider / VS Code local state
+.vs/
+.idea/
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# NuGet
+*.nupkg
+packages/
+!packages/build/
+
+# Unity (optional presentation layer)
+unity/[Ll]ibrary/
+unity/[Tt]emp/
+unity/[Oo]bj/
+unity/[Bb]uild/
+unity/[Bb]uilds/
+unity/[Ll]ogs/
+unity/[Uu]serSettings/
+
+# Simulation run output
+**/out/
+*.log
+
+# Prior exploratory work: stays on disk, out of the repository
+Simularg/
+SimulargPython/

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "1.0.0",
+  "scenarioId": "default",
+  "seed": 12345,
+  "timeHorizon": 10080,
+  "arrivalModel": {
+    "baseRatePerHour": 6.0,
+    "hourlyVariation": true,
+    "dailyVariation": true,
+    "seasonalVariation": false,
+    "interarrivalDistribution": {
+      "family": "exponential"
+    }
+  },
+  "department": {
+    "name": "UrgentCare",
+    "resourceCount": 3,
+    "resourceType": "Nurse",
+    "queuePolicy": "UrgencyFirst",
+    "roomCount": 2,
+    "roomBypassUrgency": 2
+  },
+  "resourceProfile": {
+    "baseEfficiency": 1.0,
+    "experience": 0.8,
+    "experienceBonus": 0.25,
+    "shiftLengthMinutes": 480,
+    "fatigueRatePerMinute": 0.000625,
+    "minEfficiency": 0.5,
+    "maxEfficiency": 1.5
+  },
+  "patientModel": {
+    "urgencyDistribution": {
+      "family": "categorical",
+      "categories": [1, 2, 3, 4, 5],
+      "weights": [0.05, 0.15, 0.40, 0.30, 0.10]
+    },
+    "ageDistribution": {
+      "family": "normal",
+      "mean": 42.0,
+      "standardDeviation": 21.0,
+      "min": 0,
+      "max": 105
+    },
+    "serviceDurationDistribution": {
+      "family": "lognormal",
+      "mu": 2.9,
+      "sigma": 0.5
+    },
+    "abandonmentThresholdDistribution": {
+      "family": "triangular",
+      "min": 30.0,
+      "mode": 90.0,
+      "max": 240.0
+    }
+  },
+  "metrics": {
+    "reportAverageWait": true,
+    "reportP95Wait": true,
+    "reportAbandonmentRate": true,
+    "reportUtilization": true
+  }
+}

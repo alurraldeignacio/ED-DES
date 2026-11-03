@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "001-urgent-care-simulator"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      # These are the same three commands exposed in .vscode/tasks.json and
+      # documented in specs/001-urgent-care-simulator/quickstart.md
+      # (Constitution Principle X: local and CI run the same commands).
+      - name: Restore
+        run: dotnet restore UrgentCare.sln
+
+      - name: Build
+        run: dotnet build UrgentCare.sln --no-restore
+
+      # --no-build only reuses the previous step's output; the command is otherwise the
+      # same `dotnet test UrgentCare.sln` documented in quickstart.md and .vscode/tasks.json.
+      - name: Test
+        run: dotnet test UrgentCare.sln --no-build
