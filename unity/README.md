@@ -3,6 +3,11 @@
 There is no Unity project in this release. This directory records the decision and the one
 technical constraint a future visual layer will have to solve, so neither is rediscovered later.
 
+The project's visual front end is the browser view in `src/UrgentCare.Web` (feature 002,
+[specs/002-web-visual-view](../specs/002-web-visual-view/spec.md)). It is a Blazor WebAssembly
+app in C#, so it loads `UrgentCare.Core` directly, with none of the constraint described below.
+Unity remains optional and deferred, and the same presentation-only rule applies to both.
+
 ## The decision
 
 Unity is a **presentation layer, not a model authority**. It may render simulation state; it must

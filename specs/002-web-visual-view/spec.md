@@ -92,7 +92,7 @@ A user wants to see the run's numbers next to the picture, change the random see
 
 ### Key Entities
 
-- **Visual Session**: One run as seen in the view: the selected scenario, the seed, the playback state (idle, playing, paused, complete), and the playback speed. It holds no simulation state of its own; it asks the simulation for state.
+- **Visual Session**: One run as seen in the view: the selected scenario, the seed, the playback state (idle, playing, paused, complete), and the playback speed. It holds no copy of simulation state; it owns the run and always asks the simulation for state.
 - **Department Picture**: The drawn representation of the department at the current simulated time: arrival area, waiting line in serve order, staff and rooms with their occupants, and exit counts. It is derived entirely from the simulation's state and event stream.
 - **Bundled Scenario**: A scenario configuration shipped with the project (`default`, `lean`) that the view can load without file access from the user.
 

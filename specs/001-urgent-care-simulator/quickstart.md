@@ -27,6 +27,7 @@ runs and the same ones exposed as VS Code tasks in `.vscode/tasks.json`.
 | Replicate and aggregate | `dotnet run --project src/UrgentCare.Cli -- --scenario default --replications 30` |
 | Export the event stream | `dotnet run --project src/UrgentCare.Cli -- --scenario default --headless --events events.jsonl` |
 | Show all options | `dotnet run --project src/UrgentCare.Cli -- --help` |
+| Run the web view (feature 002) | `dotnet run --project src/UrgentCare.Web`, then open `http://localhost:5270` |
 
 CI runs `dotnet test UrgentCare.sln --no-build` because the preceding step already built the
 solution; the command is otherwise identical.

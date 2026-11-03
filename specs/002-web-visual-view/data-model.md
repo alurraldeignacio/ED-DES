@@ -9,7 +9,7 @@ A scenario configuration shipped with the app.
 | Field | Type | Notes |
 |---|---|---|
 | Name | string | From the file name: `default-scenario.json` → `default` |
-| Config | `ScenarioConfig` | Parsed with `ScenarioConfigLoader.Parse` and validated with `ScenarioConfigValidator` at start-up |
+| Config | `ScenarioConfig` | Parsed with `new ScenarioConfigLoader().Parse(...)` and validated with `new ScenarioConfigValidator().ValidateOrThrow(...)` at start-up |
 
 **Validation**: A file that fails parsing or validation is a build-time mistake in `shared/config/`; the app shows the error message on the page instead of the department.
 
@@ -64,7 +64,7 @@ The picture at `DisplayTime`. Immutable; rebuilt after each frame or step from t
 | PatientsInRooms | list of `PatientView` | Treated patients for whom `Department.BypassesRooms` is false |
 | PatientsBypassingRooms | list of `PatientView` | Treated patients for whom `Department.BypassesRooms` is true |
 | RecentArrivals | list of `PatientView` | `PatientArrived` events within the last `RecentArrivalMinutes` (10) simulated minutes, for the arrival area |
-| CompletedCount, AbandonedCount | int | From the metrics |
+| CompletedCount, AbandonedCount | int | Counted from `TreatmentCompleted` and `PatientAbandoned` events in the log; always equal to the metrics' `Completed` and `Abandoned` |
 | RecentExits | list of (`PatientView`, Completed/Abandoned) | The last `RecentExitsPerKind` (5) completed and 5 abandoned exits, so leaving patients animate out |
 | Metrics | `SimulationMetrics` | `StatisticsCollector.Collect(Log.Events, Time or TimeHorizon, ResourceCount)` |
 

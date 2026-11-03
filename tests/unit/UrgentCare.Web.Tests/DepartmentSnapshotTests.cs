@@ -93,6 +93,24 @@ public class DepartmentSnapshotTests
     }
 
     [Fact]
+    public void AtTheHorizon_PatientsStillInTheDepartmentStayDrawn()
+    {
+        var session = TestSessions.Create("default");
+        session.JumpToEnd();
+
+        var snapshot = session.Snapshot();
+        var department = session.Engine.Department;
+
+        // default ends its week with patients waiting and in treatment (CLI: 13 still in system).
+        Assert.True(department.QueueLength > 0);
+        Assert.Equal(department.QueueLength, snapshot.WaitingInServeOrder.Count + snapshot.HiddenWaitingCount);
+        Assert.Equal(
+            department.CareResources.Count(r => r.AssignedPatient is not null),
+            snapshot.PatientsInRooms.Count + snapshot.PatientsBypassingRooms.Count);
+        Assert.Contains(snapshot.Staff, s => s.Patient is not null);
+    }
+
+    [Fact]
     public void BuildingASnapshot_LeavesTheRunUntouched()
     {
         var session = TestSessions.Create("default");

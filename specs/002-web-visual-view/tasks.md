@@ -132,12 +132,12 @@ description: "Task list for the web visual view"
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T037 [P] Update `README.md`: add the web view to the project description and the run command next to the CLI command
-- [ ] T038 [P] Update `unity/README.md` to say the web view (feature 002) is the project's visual front end and Unity remains optional and deferred (FR-014)
-- [ ] T039 [P] Add the `dotnet run --project src/UrgentCare.Web` row to the command table in `specs/001-urgent-care-simulator/quickstart.md` so all commands stay listed in one place (Principle X)
-- [ ] T040 Verify `dotnet publish src/UrgentCare.Web -c Release` succeeds and the published `wwwroot` loads a scenario and plays (confirms the trimming settings from T002); record the result in `specs/002-web-visual-view/quickstart.md`
-- [ ] T041 Measure jump-to-end time for the default scenario in the browser (target under 1 s, SC-003) and the full-week playback time at 1440 min/s (target under 2 min); record both in `specs/002-web-visual-view/quickstart.md`
-- [ ] T042 Run `dotnet build UrgentCare.sln` (0 warnings) and `dotnet test UrgentCare.sln` (all pass), then re-check the Constitution Check in `specs/002-web-visual-view/plan.md` and add a post-implementation note; confirm the engine members the web project actually uses match the list in `specs/002-web-visual-view/contracts/visual-session.md`, bumping its contract version if they differ
+- [ ] T037 [P] Update `README.md`: add the web view to the project description and the run command next to the CLI command. **Owner: the author.** Left open on purpose: the README is written by the repository owner, not generated.
+- [X] T038 [P] Update `unity/README.md` to say the web view (feature 002) is the project's visual front end and Unity remains optional and deferred (FR-014)
+- [X] T039 [P] Add the `dotnet run --project src/UrgentCare.Web` row to the command table in `specs/001-urgent-care-simulator/quickstart.md` so all commands stay listed in one place (Principle X)
+- [X] T040 Verify `dotnet publish src/UrgentCare.Web -c Release` succeeds and the published `wwwroot` loads a scenario and plays (confirms the trimming settings from T002); record the result in `specs/002-web-visual-view/quickstart.md`
+- [X] T041 Measure jump-to-end time for the default scenario in the browser (target under 1 s, SC-003) and the full-week playback time at 1440 min/s (target under 2 min); record both in `specs/002-web-visual-view/quickstart.md`
+- [X] T042 Run `dotnet build UrgentCare.sln` (0 warnings) and `dotnet test UrgentCare.sln` (all pass), then re-check the Constitution Check in `specs/002-web-visual-view/plan.md` and add a post-implementation note; confirm the engine members the web project actually uses match the list in `specs/002-web-visual-view/contracts/visual-session.md`, bumping its contract version if they differ
 
 ---
 

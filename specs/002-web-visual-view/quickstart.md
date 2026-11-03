@@ -59,4 +59,18 @@ At 60 min/s one real second covers an hour, so many tokens are mid-move at any i
 - Step 9: `abc` showed "The seed must be a whole number between -2147483648 and 2147483647." and kept seed 12345; `7` + Enter applied the seed, cleared the message, and gave a different run (1074 arrivals).
 - No browser console errors.
 
+**2026-11-04, polish (T040, T041).** Headless Edge, cold browser cache each time:
+
+| Measure | Release publish, static host | Debug, `dotnet run` | Target |
+|---|---|---|---|
+| `dotnet run` from a clean build to first response | n/a | 7 s | SC-001: watching within 2 min |
+| Page load to first picture | 0.9 s | 1.2 s | SC-001 |
+| Jump to end, `default`, incl. redraw | 0.21 s | 0.21 s | SC-003: under 1 s |
+| Jump to end, `lean`, incl. redraw | 0.10 s | 0.15 s | SC-003 |
+| Full week watched at 1440 min/s | 7.5 s | 7.5 s | SC-003: under 2 min |
+
+- `dotnet publish src/UrgentCare.Web -c Release` succeeds with no trimming warnings. The published `wwwroot`, served by a plain static file server, loads both scenarios, plays, and matches all ten CLI metrics for `default` and `lean`. The `JsonSerializerIsReflectionEnabledByDefault` and `TrimmerRootAssembly` settings from research.md §8 hold.
+- The week watched at 1440 min/s ends with the same ten metrics as the CLI in both builds, so watching does not change the outcome (FR-010).
+- No browser console errors in either build.
+
 Fixed during this pass: new patient tokens grew in from the stage's top-left corner because `scale` was applied on top of a `transform` used for position; positions now use the `translate` property, so tokens grow in place.
