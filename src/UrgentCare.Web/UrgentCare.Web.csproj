@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+    <!-- Publishing trims the app, and trimmed apps turn off reflection-based JSON by default.
+         ScenarioConfigLoader relies on it, so keep it on and keep Core's configuration types
+         intact (research.md §8). -->
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.9" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UrgentCare.Core\UrgentCare.Core.csproj" />
+    <ProjectReference Include="..\..\analysis\UrgentCare.Analysis\UrgentCare.Analysis.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TrimmerRootAssembly Include="UrgentCare.Core" />
+  </ItemGroup>
+
+  <!-- The same scenario files the CLI loads, compiled in so the browser needs no file access
+       or HTTP fetch (research.md §7). -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\shared\config\*-scenario.json"
+                      LogicalName="scenarios/%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>

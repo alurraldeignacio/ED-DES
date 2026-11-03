@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ["main", "001-urgent-care-simulator"]
+    branches: ["main", "001-urgent-care-simulator", "002-web-visual-view"]
   pull_request:
     branches: ["main"]
 

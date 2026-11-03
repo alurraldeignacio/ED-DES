@@ -1,0 +1,27 @@
+@using System.Globalization
+@using UrgentCare.Web.Session
+
+@* One patient. The ESI number is printed, not only coloured, so urgency reads without colour
+   (FR-007). Position is set in grid cells through CSS variables; the stylesheet turns it into
+   a transform, so a change of place animates. *@
+<div class="token esi-@Patient.Urgency @(Patient.Urgency <= 2 ? "acute" : null) @Class"
+     style="--x: @Cells(X); --y: @Cells(Y);"
+     title="@Title">@Patient.Urgency</div>
+
+@code {
+    [Parameter, EditorRequired] public PatientView Patient { get; set; } = default!;
+
+    [Parameter] public double X { get; set; }
+
+    [Parameter] public double Y { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter] public string? Note { get; set; }
+
+    private string Title =>
+        $"{Patient.Id} · ESI {Patient.Urgency} · waited {Patient.WaitedMinutes:0} min{(Note is null ? "" : " · " + Note)}";
+
+    // CSS needs a dot as the decimal separator whatever the browser's culture.
+    private static string Cells(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+}

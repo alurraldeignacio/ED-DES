@@ -1,0 +1,163 @@
+@using System.Globalization
+@using UrgentCare.Core.Domain
+@using UrgentCare.Web.Session
+
+@* The department as a stage measured in grid cells. Every patient token sits directly in the
+   stage, keyed by patient id, so moving from the waiting line to a nurse or to an exit is a
+   change of position the browser animates rather than a new element (research.md §9). *@
+<div class="stage-scroll">
+    <div class="stage" style="--rows: @Cells(Rows);">
+
+        <section class="area arrivals" style="@Box(0, 0, ArrivalsWidth, Rows)">
+            <h2>Arrivals</h2>
+            <p class="count">@Snapshot.ArrivalCount</p>
+            @if (Snapshot.RecentArrivals.Count > 0)
+            {
+                <p class="note">Just in:</p>
+                <ul class="recent">
+                    @foreach (var p in Snapshot.RecentArrivals.TakeLast(6))
+                    {
+                        <li>@p.Id <span class="esi-text">ESI @p.Urgency</span></li>
+                    }
+                </ul>
+            }
+        </section>
+
+        <section class="area waiting" style="@Box(WaitingLeft, 0, WaitingColumns + 1, 4.6)">
+            <h2>Waiting <span class="note">next to be seen first →</span></h2>
+            @if (Snapshot.HiddenWaitingCount > 0)
+            {
+                <p class="more" style="@At(0.5, 3.95)">+@Snapshot.HiddenWaitingCount more waiting</p>
+            }
+        </section>
+
+        <section class="area rooms" style="@Box(WaitingLeft, 5.2, WaitingColumns + 1, RoomsHeight)">
+            <h2>Rooms <span class="note">@RoomsInUse of @Snapshot.RoomCount in use</span></h2>
+            <div class="room-row">
+                @for (var i = 0; i < Snapshot.RoomCount; i++)
+                {
+                    var occupant = i < Snapshot.PatientsInRooms.Count ? Snapshot.PatientsInRooms[i] : null;
+                    <div class="room @(occupant is null ? "free" : "taken")">
+                        @(occupant is null ? "free" : occupant.Id)
+                    </div>
+                }
+            </div>
+        </section>
+
+        <section class="area treatment" style="@Box(TreatmentLeft, 0, TreatmentWidth, Rows)">
+            <h2>Treatment</h2>
+        </section>
+
+        @for (var i = 0; i < Snapshot.Staff.Count; i++)
+        {
+            var staff = Snapshot.Staff[i];
+            <div @key="staff.Id" class="staff @staff.State.ToString().ToLowerInvariant()"
+                 style="@At(TreatmentLeft + 0.3, BayY(i))">
+                <strong>@staff.Id</strong> @staff.Type
+                <span class="state">@StaffStateText(staff.State)</span>
+            </div>
+            @if (staff.Patient is { } treated)
+            {
+                <span @key="WhereKey(staff.Id)" class="where" style="@At(TreatmentLeft + 4.4, BayY(i) + 0.1)">
+                    @(IsBypassing(treated) ? "No room (bypass)" : "In a room")
+                </span>
+            }
+        }
+
+        <section class="area exit completed" style="@Box(ExitLeft, 0, ExitWidth, 3.6)">
+            <h2>Completed</h2>
+            <p class="count">@Snapshot.CompletedCount</p>
+        </section>
+
+        <section class="area exit abandoned" style="@Box(ExitLeft, 4.0, ExitWidth, 3.6)">
+            <h2>Left without being seen</h2>
+            <p class="count">@Snapshot.AbandonedCount</p>
+        </section>
+
+        @* Ordered by arrival (P2 before P10) so existing tokens never change DOM order; a moved
+           element would lose its transition. *@
+        @foreach (var token in Tokens().OrderBy(t => t.Patient.Id.Length).ThenBy(t => t.Patient.Id, StringComparer.Ordinal))
+        {
+            <PatientToken @key="token.Patient.Id" Patient="token.Patient" X="token.X" Y="token.Y"
+                          Class="@token.Class" Note="@token.Note" />
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public DepartmentSnapshot Snapshot { get; set; } = default!;
+
+    // Layout, in grid cells.
+    private const double ArrivalsWidth = 3.2;
+    private const double WaitingLeft = 3.5;
+    private const int WaitingColumns = 10;
+    private const double RoomsHeight = 2.4;
+    private const double TreatmentLeft = 15.0;
+    private const double TreatmentWidth = 7.6;
+    private const double ExitLeft = 23.0;
+    private const double ExitWidth = DepartmentSnapshot.RecentExitsPerKind + 0.6;
+    private const double BaySpacing = 1.3;
+
+    private double Rows => Math.Max(8.0, 1.2 + (Snapshot.Staff.Count * BaySpacing) + 0.4);
+
+    private int RoomsInUse => Snapshot.PatientsInRooms.Count;
+
+    private static double BayY(int index) => 1.2 + (index * BaySpacing);
+
+    private static string WhereKey(string staffId) => staffId + ":where";
+
+    private bool IsBypassing(PatientView patient) =>
+        Snapshot.PatientsBypassingRooms.Any(p => p.Id == patient.Id);
+
+    private sealed record Placed(PatientView Patient, double X, double Y, string? Class, string? Note);
+
+    /// <summary>Where each drawn patient sits. Ids are unique across these groups.</summary>
+    private IEnumerable<Placed> Tokens()
+    {
+        for (var i = 0; i < Snapshot.WaitingInServeOrder.Count; i++)
+        {
+            yield return new Placed(
+                Snapshot.WaitingInServeOrder[i],
+                WaitingLeft + 0.5 + (i % WaitingColumns),
+                1.0 + (i / WaitingColumns),
+                i == 0 ? "next" : null,
+                $"#{i + 1} in line");
+        }
+
+        for (var i = 0; i < Snapshot.Staff.Count; i++)
+        {
+            if (Snapshot.Staff[i].Patient is { } treated)
+            {
+                var bypass = IsBypassing(treated);
+                yield return new Placed(
+                    treated, TreatmentLeft + 3.3, BayY(i), bypass ? "bypass" : null,
+                    $"with {Snapshot.Staff[i].Id}{(bypass ? ", no room (bypass)" : ", in a room")}");
+            }
+        }
+
+        var completed = 0;
+        var abandoned = 0;
+        foreach (var exit in Snapshot.RecentExits)
+        {
+            yield return exit.Kind == ExitKind.Completed
+                ? new Placed(exit.Patient, ExitLeft + 0.3 + completed++, 2.3, "gone", "completed")
+                : new Placed(exit.Patient, ExitLeft + 0.3 + abandoned++, 6.3, "gone abandoned", "left without being seen");
+        }
+    }
+
+    private static string StaffStateText(ResourceState state) => state switch
+    {
+        ResourceState.Available => "free",
+        ResourceState.Busy => "busy",
+        _ => "offline"
+    };
+
+    private static string Box(double x, double y, double width, double height) =>
+        $"left: calc({Cells(x)} * var(--cell)); top: calc({Cells(y)} * var(--cell)); "
+        + $"width: calc({Cells(width)} * var(--cell)); height: calc({Cells(height)} * var(--cell));";
+
+    private static string At(double x, double y) =>
+        $"left: calc({Cells(x)} * var(--cell)); top: calc({Cells(y)} * var(--cell));";
+
+    private static string Cells(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+}

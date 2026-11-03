@@ -129,6 +129,10 @@ public sealed class Department
         }
     }
 
-    private bool BypassesRooms(Patient patient) =>
+    /// <summary>
+    /// Whether this patient's acuity exempts them from the room pool. Public so a view can show
+    /// where a treated patient is without restating the rule.
+    /// </summary>
+    public bool BypassesRooms(Patient patient) =>
         RoomBypassUrgency > 0 && patient.Urgency <= RoomBypassUrgency;
 }

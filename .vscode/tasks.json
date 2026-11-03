@@ -37,6 +37,17 @@
         "default"
       ],
       "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "run-web",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "run",
+        "--project",
+        "src/UrgentCare.Web/UrgentCare.Web.csproj"
+      ],
+      "problemMatcher": "$msCompile"
     }
   ]
 }
