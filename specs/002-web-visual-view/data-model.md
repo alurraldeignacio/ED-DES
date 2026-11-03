@@ -63,9 +63,9 @@ The picture at `DisplayTime`. Immutable; rebuilt after each frame or step from t
 | RoomCount | int | `Department.RoomCount` |
 | PatientsInRooms | list of `PatientView` | Treated patients for whom `Department.BypassesRooms` is false |
 | PatientsBypassingRooms | list of `PatientView` | Treated patients for whom `Department.BypassesRooms` is true |
-| RecentArrivals | list of `PatientView` | `PatientArrived` events within the last few simulated minutes, for the arrival area |
+| RecentArrivals | list of `PatientView` | `PatientArrived` events within the last `RecentArrivalMinutes` (10) simulated minutes, for the arrival area |
 | CompletedCount, AbandonedCount | int | From the metrics |
-| RecentExits | list of (`PatientView`, Completed/Abandoned) | Last few exit events, so leaving patients animate out |
+| RecentExits | list of (`PatientView`, Completed/Abandoned) | The last `RecentExitsPerKind` (5) completed and 5 abandoned exits, so leaving patients animate out |
 | Metrics | `SimulationMetrics` | `StatisticsCollector.Collect(Log.Events, Time or TimeHorizon, ResourceCount)` |
 
 `MaxDrawnWaiting` is a display constant (30).

@@ -1,0 +1,130 @@
+@page "/"
+@implements IDisposable
+@using System.Diagnostics
+@using UrgentCare.Core.Distributions
+@using UrgentCare.Web.Components
+@using UrgentCare.Web.Session
+@inject BundledScenarios Scenarios
+@inject IDistributionFactory DistributionFactory
+
+<PageTitle>Urgent Care Simulator</PageTitle>
+
+<div class="page">
+    <header class="page-header">
+        <h1>Urgent Care Simulator</h1>
+        <span class="clock">@ClockText(_session.DisplayTime)</span>
+        <button class="primary" @onclick="TogglePlay"
+                disabled="@(_session.PlaybackState == PlaybackState.Complete)">
+            @(_session.PlaybackState == PlaybackState.Playing ? "Pause" : "Play")
+        </button>
+        <span class="status">
+            @_session.Scenario.Name scenario, seed @_session.Seed, @_session.Speed.ToString("0") simulated min/s
+            @if (_session.PlaybackState == PlaybackState.Complete)
+            {
+                <text> · run complete</text>
+            }
+        </span>
+    </header>
+
+    <DepartmentView Snapshot="_snapshot" />
+
+    <div class="legend">
+        <span>Urgency (ESI):</span>
+        @for (var esi = 1; esi <= 5; esi++)
+        {
+            <span><span class="swatch esi-@esi @(esi <= 2 ? "acute" : null)">@esi</span>@EsiName(esi)</span>
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>About 20 frames a second (research.md §10).</summary>
+    private static readonly TimeSpan FrameInterval = TimeSpan.FromMilliseconds(50);
+
+    private VisualSession _session = default!;
+    private DepartmentSnapshot _snapshot = default!;
+    private CancellationTokenSource? _frames;
+
+    protected override void OnInitialized()
+    {
+        var scenario = Scenarios.All[0];
+        _session = new VisualSession(scenario, scenario.Config.Seed, DistributionFactory);
+        _snapshot = _session.Snapshot();
+    }
+
+    private void TogglePlay()
+    {
+        if (_session.PlaybackState == PlaybackState.Playing)
+        {
+            _session.Pause();
+            StopFrames();
+            return;
+        }
+
+        _session.Play();
+        if (_session.PlaybackState == PlaybackState.Playing)
+        {
+            _ = RunFramesAsync();
+        }
+    }
+
+    /// <summary>
+    /// Advances the session by the real time since the previous frame, then redraws. WebAssembly
+    /// runs on one thread, so the loop and the buttons never touch the session concurrently.
+    /// </summary>
+    private async Task RunFramesAsync()
+    {
+        StopFrames();
+        _frames = new CancellationTokenSource();
+        var token = _frames.Token;
+
+        using var timer = new PeriodicTimer(FrameInterval);
+        var sinceLastFrame = Stopwatch.StartNew();
+
+        try
+        {
+            while (await timer.WaitForNextTickAsync(token))
+            {
+                _session.Advance(sinceLastFrame.Elapsed.TotalSeconds);
+                sinceLastFrame.Restart();
+
+                _snapshot = _session.Snapshot();
+                StateHasChanged();
+
+                if (_session.PlaybackState != PlaybackState.Playing)
+                {
+                    break;
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Paused or navigated away.
+        }
+    }
+
+    private void StopFrames()
+    {
+        _frames?.Cancel();
+        _frames?.Dispose();
+        _frames = null;
+    }
+
+    public void Dispose() => StopFrames();
+
+    private static string ClockText(double minutes)
+    {
+        var day = (int)(minutes / 1440.0) + 1;
+        var ofDay = TimeSpan.FromMinutes(minutes % 1440.0);
+        return $"Day {day}, {ofDay.Hours:00}:{ofDay.Minutes:00}";
+    }
+
+    private static string EsiName(int esi) => esi switch
+    {
+        1 => "resuscitation",
+        2 => "emergent",
+        3 => "urgent",
+        4 => "less urgent",
+        _ => "non-urgent"
+    };
+}

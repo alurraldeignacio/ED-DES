@@ -36,3 +36,15 @@ Each step names the spec item it proves.
 9. **Seed** (FR-004, edge case). Enter `abc` as the seed: a message appears and the seed is unchanged. Enter `7`, Apply, Jump to end; the metrics differ from step 7. (The CLI has no seed flag; parity for non-default seeds is covered by `CliParityTests`.)
 
 The automated equivalent of steps 7 and 8 is `CliParityTests` and `VisualSessionTests`, run by `dotnet test UrgentCare.sln`.
+
+## Validation log
+
+**2026-11-04, MVP (T024), steps 1 to 4.** Driven in headless Edge through Playwright from a throwaway console app (not part of the repository), default scenario, seed 12345, 60 simulated min/s:
+
+- Step 1: the page loads at `http://localhost:5270`, Play starts the clock (Day 1, 04:59 after 5 s of real time), patients arrive, wait, are treated and leave.
+- Step 2: with nine waiting, the line read ESI 3,3,3,4,4,4,4,5,5 left to right under UrgencyFirst; the next patient is ringed and every token prints its ESI number.
+- Step 3: at Day 1, 05:20 both rooms were full and an ESI 2 patient was being treated by R3 under "No room (bypass)". **Deviation**: validated by playing, not stepping, because Step arrives with US2; step 3 should be re-run with Step after T029.
+- Step 4: the first abandonment appeared at Day 1, 12:34 in "Left without being seen", matching the first `PatientAbandoned` event (t = 741.5 min) in the CLI event stream for the same seed. Pause stopped the clock.
+- No browser console errors.
+
+At 60 min/s one real second covers an hour, so many tokens are mid-move at any instant; the picture settles when paused.

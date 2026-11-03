@@ -90,6 +90,29 @@ public sealed class SimulationEngine
     public IReadOnlyCollection<Patient> Patients => _patients.Values;
 
     /// <summary>
+    /// When the next event will happen, or null when <see cref="RunOneEvent"/> would return
+    /// false. A view uses it to advance by simulated time without overshooting. Reading it
+    /// never changes the run.
+    /// </summary>
+    public double? NextEventTime
+    {
+        get
+        {
+            if (Clock.Status != SimulationStatus.Running)
+            {
+                return null;
+            }
+
+            if (!_futureEvents.TryPeek(out var next) || next.Time > _config.TimeHorizon)
+            {
+                return null;
+            }
+
+            return next.Time;
+        }
+    }
+
+    /// <summary>
     /// Runs to the configured time horizon. Degenerate scenarios are rejected up front rather
     /// than producing a silently empty result.
     /// </summary>
