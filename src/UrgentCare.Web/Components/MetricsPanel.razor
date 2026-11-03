@@ -1,0 +1,71 @@
+@using UrgentCare.Core.Configuration
+@using UrgentCare.Web.Session
+
+@* Labels and number formats match the CLI's headless output, so the two can be read side by
+   side (FR-011, FR-012, contracts/visual-session.md). Metrics the scenario switches off are
+   hidden, as in the CLI. *@
+<aside class="metrics-panel">
+    <h2>Scenario</h2>
+    <dl>
+        <dt>Horizon</dt>
+        <dd>@Config.TimeHorizon.ToString("0") simulated minutes</dd>
+        <dt>Staffing</dt>
+        <dd>@Config.Department.ResourceCount x @Config.Department.ResourceType</dd>
+        <dt>Rooms</dt>
+        <dd>@Config.Department.RoomCount (bypass at urgency &lt;= @Config.Department.RoomBypassUrgency)</dd>
+        <dt>Queue policy</dt>
+        <dd>@Config.Department.QueuePolicy</dd>
+    </dl>
+
+    <h2>Metrics <span class="note">@(IsComplete ? "final" : "so far")</span></h2>
+    <dl>
+        <dt>Arrivals</dt>
+        <dd>@M.Arrivals</dd>
+        <dt>Completed</dt>
+        <dd>@M.Completed</dd>
+        <dt>Abandoned</dt>
+        <dd>@M.Abandoned</dd>
+        @if (M.AverageWaitTime is { } averageWait)
+        {
+            <dt>Average wait</dt>
+            <dd>@averageWait.ToString("0.0") min</dd>
+        }
+        @if (M.P95WaitTime is { } p95)
+        {
+            <dt>P95 wait</dt>
+            <dd>@p95.ToString("0.0") min</dd>
+        }
+        @if (M.AbandonmentRate is { } abandonment)
+        {
+            <dt>Abandonment</dt>
+            <dd>@abandonment.ToString("P1")</dd>
+        }
+        @if (M.Utilization is { } utilization)
+        {
+            <dt>Utilization</dt>
+            <dd>@utilization.ToString("P1")</dd>
+        }
+        <dt>Throughput</dt>
+        <dd>@M.Throughput.ToString("0.00") patients/hour</dd>
+        <dt>Queue now</dt>
+        <dd>@Snapshot.QueueLength waiting</dd>
+        <dt>Avg queue</dt>
+        <dd>@M.AverageQueueLength.ToString("0.0") waiting</dd>
+        <dt>Peak queue</dt>
+        <dd>@M.MaxQueueLength waiting</dd>
+    </dl>
+    @if (!IsComplete)
+    {
+        <p class="note">Utilization counts finished treatments only, so it reads low while treatments are under way.</p>
+    }
+</aside>
+
+@code {
+    [Parameter, EditorRequired] public DepartmentSnapshot Snapshot { get; set; } = default!;
+
+    [Parameter, EditorRequired] public ScenarioConfig Config { get; set; } = default!;
+
+    [Parameter] public bool IsComplete { get; set; }
+
+    private UrgentCare.Core.Metrics.SimulationMetrics M => Snapshot.Metrics;
+}

@@ -13,12 +13,8 @@
     <header class="page-header">
         <h1>Urgent Care Simulator</h1>
         <span class="clock">@ClockText(_session.DisplayTime)</span>
-        <button class="primary" @onclick="TogglePlay"
-                disabled="@(_session.PlaybackState == PlaybackState.Complete)">
-            @(_session.PlaybackState == PlaybackState.Playing ? "Pause" : "Play")
-        </button>
         <span class="status">
-            @_session.Scenario.Name scenario, seed @_session.Seed, @_session.Speed.ToString("0") simulated min/s
+            @_session.Scenario.Name scenario, seed @_session.Seed
             @if (_session.PlaybackState == PlaybackState.Complete)
             {
                 <text> · run complete</text>
@@ -26,7 +22,18 @@
         </span>
     </header>
 
-    <DepartmentView Snapshot="_snapshot" />
+    <ControlBar State="_session.PlaybackState" Speed="_session.Speed"
+                Scenarios="Scenarios.All" ScenarioName="@_session.Scenario.Name" Seed="_session.Seed"
+                SeedError="@_seedError"
+                OnTogglePlay="TogglePlay" OnStep="Step" OnSpeedChanged="ChangeSpeed"
+                OnJumpToEnd="JumpToEnd" OnRestart="Restart"
+                OnScenarioChanged="ChangeScenario" OnSeedApplied="ApplySeed" />
+
+    <div class="workspace">
+        <DepartmentView Snapshot="_snapshot" />
+        <MetricsPanel Snapshot="_snapshot" Config="_session.Scenario.Config"
+                      IsComplete="@(_session.PlaybackState == PlaybackState.Complete)" />
+    </div>
 
     <div class="legend">
         <span>Urgency (ESI):</span>
@@ -44,12 +51,47 @@
     private VisualSession _session = default!;
     private DepartmentSnapshot _snapshot = default!;
     private CancellationTokenSource? _frames;
+    private string? _seedError;
 
     protected override void OnInitialized()
     {
         var scenario = Scenarios.All[0];
-        _session = new VisualSession(scenario, scenario.Config.Seed, DistributionFactory);
+        StartSession(scenario, scenario.Config.Seed);
+    }
+
+    /// <summary>A new scenario or seed is a new run, starting Idle; the chosen speed carries over.</summary>
+    private void StartSession(BundledScenario scenario, int seed)
+    {
+        StopFrames();
+        var speed = _session?.Speed;
+        _session = new VisualSession(scenario, seed, DistributionFactory);
+        if (speed is { } kept)
+        {
+            _session.Speed = kept;
+        }
+
         _snapshot = _session.Snapshot();
+    }
+
+    // Each scenario starts from its own configured seed.
+    private void ChangeScenario(string name)
+    {
+        var scenario = Scenarios.All.FirstOrDefault(s => s.Name == name);
+        if (scenario is not null)
+        {
+            _seedError = null;
+            StartSession(scenario, scenario.Config.Seed);
+        }
+    }
+
+    private void ApplySeed(string text)
+    {
+        if (!SeedInput.TryParse(text, out var seed, out _seedError))
+        {
+            return; // keep the current run and seed (spec edge case)
+        }
+
+        StartSession(_session.Scenario, seed);
     }
 
     private void TogglePlay()
@@ -66,6 +108,30 @@
         {
             _ = RunFramesAsync();
         }
+    }
+
+    private void Step()
+    {
+        StopFrames();
+        _session.Step();
+        _snapshot = _session.Snapshot();
+    }
+
+    // Takes effect on the next frame; the run itself is untouched (FR-010).
+    private void ChangeSpeed(double speed) => _session.Speed = speed;
+
+    private void JumpToEnd()
+    {
+        StopFrames();
+        _session.JumpToEnd();
+        _snapshot = _session.Snapshot();
+    }
+
+    private void Restart()
+    {
+        StopFrames();
+        _session.Restart();
+        _snapshot = _session.Snapshot();
     }
 
     /// <summary>

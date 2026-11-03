@@ -1,3 +1,4 @@
+using UrgentCare.Core.Metrics;
 using UrgentCare.Web.Session;
 
 namespace UrgentCare.Web.Tests;
@@ -92,5 +93,166 @@ public class VisualSessionTests
 
         Assert.Equal(PlaybackState.Complete, session.PlaybackState);
         Assert.Equal(horizon, session.DisplayTime);
+    }
+
+    // --- Controls (US2) ---
+
+    [Fact]
+    public void Step_FromIdle_BeginsTheRunAndAppliesExactlyOneEngineEvent()
+    {
+        var session = TestSessions.Create("default");
+
+        // The same run driven straight through the engine, one event.
+        var reference = TestSessions.Create("default");
+        reference.Engine.Begin();
+        reference.Engine.RunOneEvent();
+
+        session.Step();
+
+        Assert.Equal(PlaybackState.Paused, session.PlaybackState);
+        Assert.Equal(TestSessions.Fingerprint(reference.Log), TestSessions.Fingerprint(session.Log));
+        Assert.Equal(reference.Engine.Clock.CurrentTime, session.DisplayTime);
+    }
+
+    [Fact]
+    public void Step_WhilePlaying_PausesThenSteps()
+    {
+        var session = TestSessions.Create("default");
+        session.Play();
+        session.Advance(0.1);
+        var before = session.Log.Events.Count;
+
+        session.Step();
+
+        Assert.Equal(PlaybackState.Paused, session.PlaybackState);
+        Assert.True(session.Log.Events.Count > before);
+    }
+
+    [Fact]
+    public void Step_WithNoEventLeft_CompletesTheRun()
+    {
+        var session = TestSessions.PlayPastTheLastEvent("default");
+        session.Pause();
+
+        session.Step();
+
+        Assert.Equal(PlaybackState.Complete, session.PlaybackState);
+        Assert.Equal(session.Scenario.Config.TimeHorizon, session.DisplayTime);
+    }
+
+    [Fact]
+    public void ChangingSpeedMidRun_KeepsTheEngine_AndDoesNotChangeTheOutcome()
+    {
+        var uninterrupted = TestSessions.Create("default");
+        uninterrupted.JumpToEnd();
+
+        var session = TestSessions.Create("default");
+        var engine = session.Engine;
+        session.Play();
+        foreach (var speed in VisualSession.SpeedPresets)
+        {
+            session.Speed = speed;
+            session.Advance(VisualSession.MaxFrameSeconds);
+        }
+
+        session.Speed = 1e9;
+        session.Advance(VisualSession.MaxFrameSeconds);
+
+        Assert.Same(engine, session.Engine);
+        Assert.Equal(PlaybackState.Complete, session.PlaybackState);
+        Assert.Equal(TestSessions.Fingerprint(uninterrupted.Log), TestSessions.Fingerprint(session.Log));
+    }
+
+    [Fact]
+    public void JumpToEnd_CompletesAtTheHorizon()
+    {
+        var session = TestSessions.Create("default");
+
+        session.JumpToEnd();
+
+        Assert.Equal(PlaybackState.Complete, session.PlaybackState);
+        Assert.Equal(session.Scenario.Config.TimeHorizon, session.DisplayTime);
+        Assert.Null(session.Engine.NextEventTime);
+    }
+
+    [Fact]
+    public void Restart_StartsOverWithTheSameSeed_AndReproducesTheRun()
+    {
+        var session = TestSessions.Create("default");
+        session.JumpToEnd();
+        var firstRun = TestSessions.Fingerprint(session.Log);
+        var firstEngine = session.Engine;
+
+        session.Restart();
+
+        Assert.Equal(PlaybackState.Idle, session.PlaybackState);
+        Assert.Equal(0.0, session.DisplayTime);
+        Assert.Empty(session.Log.Events);
+        Assert.NotSame(firstEngine, session.Engine);
+
+        session.JumpToEnd();
+
+        Assert.Equal(firstRun, TestSessions.Fingerprint(session.Log));
+    }
+
+    // --- Metrics and seed (US3) ---
+
+    [Fact]
+    public void MidRunMetrics_AreCollectedOverTheTimeShown()
+    {
+        var session = TestSessions.Create("default");
+        session.Speed = 240;
+        session.Play();
+        for (var i = 0; i < 20; i++)
+        {
+            session.Advance(VisualSession.MaxFrameSeconds);
+        }
+
+        var config = session.Scenario.Config;
+        var expected = new StatisticsCollector(config.Metrics)
+            .Collect(session.Log.Events, session.DisplayTime, config.Department.ResourceCount);
+
+        Assert.Equal(1200.0, session.DisplayTime, precision: 6);
+        Assert.Equal(expected.Throughput, session.Metrics.Throughput);
+        Assert.Equal(expected.Utilization, session.Metrics.Utilization);
+        Assert.Equal(expected.AverageQueueLength, session.Metrics.AverageQueueLength);
+        Assert.Equal(session.Metrics.Arrivals, session.Snapshot().Metrics.Arrivals);
+    }
+
+    [Fact]
+    public void CompletedRunMetrics_AreCollectedOverTheHorizon()
+    {
+        var session = TestSessions.Create("default");
+        session.JumpToEnd();
+
+        var config = session.Scenario.Config;
+        var expected = new StatisticsCollector(config.Metrics)
+            .Collect(session.Log.Events, config.TimeHorizon, config.Department.ResourceCount);
+
+        Assert.Equal(expected.Throughput, session.Metrics.Throughput);
+        Assert.Equal(expected.AverageQueueLength, session.Metrics.AverageQueueLength);
+    }
+
+    [Theory]
+    [InlineData("12345", 12345)]
+    [InlineData(" 7 ", 7)]
+    [InlineData("-3", -3)]
+    [InlineData("2147483647", int.MaxValue)]
+    public void SeedInput_AcceptsWholeNumbersInRange(string text, int expected)
+    {
+        Assert.True(SeedInput.TryParse(text, out var seed, out var error));
+        Assert.Equal(expected, seed);
+        Assert.Null(error);
+    }
+
+    [Theory]
+    [InlineData("abc")]
+    [InlineData("1.5")]
+    [InlineData("")]
+    [InlineData("99999999999")]
+    public void SeedInput_RejectsAnythingElse_WithAMessage(string text)
+    {
+        Assert.False(SeedInput.TryParse(text, out _, out var error));
+        Assert.False(string.IsNullOrWhiteSpace(error));
     }
 }

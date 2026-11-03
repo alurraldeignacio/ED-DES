@@ -41,10 +41,26 @@ Add a browser-based operational view that runs the existing `UrgentCare.Core` en
 - **Principle IV, contract at the boundary**: Pass. The view consumes the engine through its public API and the versioned `SimulationEvent` stream; the scenario files keep their existing `schemaVersion` contract. The two small Core additions (see research.md) are public, documented, read-only members. The view's own contract is recorded, with a version (1.0.0) and the rule for bumping it, in [contracts/visual-session.md](./contracts/visual-session.md).
 - **Principle V, test the transformation**: Pass. Unit tests cover the snapshot transformation (engine state to picture), playback pacing, and serve-order listing against the real engine and real policies; no domain mocking.
 - **Principle VI, emit structured events, derive everything else**: Pass. Running metrics are recomputed from the event log with `StatisticsCollector`; the picture is derived from engine state after each event. The view keeps no counters.
-- **Principle VII, recovery over prevention**: Pass. The feature is additive: reverting the commit, or simply not running the web project, leaves the CLI and engine unchanged. The Core additions are read-only and do not change any existing behaviour, which the existing 272-test suite verifies.
+- **Principle VII, recovery over prevention**: Pass. The feature is additive and switched off simply by not running the web project, which takes no code change and leaves the CLI and engine unchanged. The Core additions are read-only and do not change any existing behaviour, which the existing 280-test suite verifies.
 - **Principle VIII, attention is finite**: N/A. Local tool, no alerting surface.
 - **Principle IX, value at the user**: Exception, as for feature 001: "shipped" for a local learning tool means runnable from the documented command and verified by the quickstart walkthrough. Static publish is possible but not part of this feature.
 - **Principle X, commands discoverable; local dev matches CI**: Pass. The web project joins `UrgentCare.sln`, so CI's existing `restore`, `build`, `test` commands cover it unchanged. The run command is added to the quickstart command table and to `.vscode/tasks.json`.
+
+### Post-implementation re-check (T042)
+
+Re-checked against `.specify/memory/constitution.md` after US1 to US3 and the polish tasks were built.
+
+- **Single-language stack**: Pass. The web project is C# and Razor with one stylesheet. The only script on the page is the framework's own loader; no JavaScript was authored and no Node or npm is involved.
+- **Principle I, do not distribute by default**: Pass. No server-side component. The app is static files: `dotnet run` serves them in development, and the Release publish runs from a plain static file server.
+- **Principle II, optimize for deletion**: Pass, verified. Only `tests/unit/UrgentCare.Web.Tests` references `UrgentCare.Web`. Session logic is four small files (`BundledScenarios`, `VisualSession`, `DepartmentSnapshot`, `SeedInput`), and the UI is four components and one page.
+- **Principle III, make dependencies explicit**: Pass, verified. The page receives `BundledScenarios` and `IDistributionFactory` by injection, and the session receives scenario, seed and factory through its constructor. The only static members are immutable: the frame interval and the speed presets.
+- **Principle IV, contract at the boundary**: Pass. The T042 check of engine members used against the contract found two unlisted reads, `SimulationEngine.Patients` and `Patient.WaitingTime`. They are now listed, and the contract is bumped to 1.1.0 under its own versioning rule. The view calls no mutating member of the domain.
+- **Principle V, test the transformation**: Pass. 47 new tests (327 in total), all against the real engine, real policies and the real distribution factory, with no domain mocks. `CliParityTests` proves FR-012 field by field for four scenario and seed pairs.
+- **Principle VI, emit structured events, derive everything else**: Pass. Every displayed metric comes from `StatisticsCollector` over the event log, and the exit and arrival counts are read from the same log.
+- **Principle VII, recovery over prevention**: Pass. The feature is off unless the web project is run. The Core additions are read-only, and the 280 pre-existing tests pass unchanged.
+- **Principle VIII, attention is finite**: N/A.
+- **Principle IX, value at the user**: Exception unchanged (see Complexity Tracking). The Release publish was verified on a static host, so hosting it later needs no code change.
+- **Principle X, commands discoverable; local dev matches CI**: Pass. `run-web` is in `.vscode/tasks.json`, both quickstarts list the command, and CI builds and tests the web projects through `UrgentCare.sln`. That CI run passed on Linux for the `002-web-visual-view` push.
 
 ### Post-design re-check
 

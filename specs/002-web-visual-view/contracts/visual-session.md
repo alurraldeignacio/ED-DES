@@ -1,6 +1,8 @@
 # Contract: Visual Session
 
-**Contract version**: 1.0.0
+**Contract version**: 1.1.0
+
+1.1.0 (minor) adds `SimulationEngine.Patients` and `Patient.WaitingTime`, which the implementation reads to label tokens with minutes waited. Found by the T042 check of members used against members listed.
 
 The web view's contract has two sides: what it consumes from the engine, and what it offers the user. Both are listed so that a change on either side is a visible contract change.
 
@@ -25,17 +27,20 @@ The view uses only these public members. Anything else is off limits to the web 
 | `SimulationEngine.RunOneEvent()` | Advance exactly one event; false when finished |
 | `SimulationEngine.NextEventTime` **(new)** | `double?`: time of the next pending event within the horizon, or null when none remains. Read-only; never changes state |
 | `SimulationEngine.Clock.CurrentTime` | Time of the last processed event |
+| `SimulationEngine.Patients` **(1.1.0)** | Looking up patients named in recent arrival and exit events |
 | `SimulationEngine.Department` | `WaitingArea`, `QueuePolicy`, `CareResources`, `RoomCount`, `QueueLength` |
 | `Department.BypassesRooms(Patient)` **(made public)** | Whether a patient's acuity bypasses the room pool. Unchanged logic |
 | `IQueuePolicy.SelectNext(waiting, now)` | Ordering the drawn waiting line. Relies on the interface's documented read-only and deterministic guarantees |
 | `CareResource.Id`, `.Type`, `.State`, `.AssignedPatient` | Staff panel |
-| `Patient.Id`, `.Urgency`, `.ArrivalTime`, `.State` | Patient tokens |
+| `Patient.Id`, `.Urgency`, `.ArrivalTime`, `.State`, `.WaitingTime` **(1.1.0)** | Patient tokens |
 | `InMemoryEventLog` and `SimulationEvent` | Event log; arrivals and exits for animation |
 | `StatisticsCollector.Collect(events, horizon, resourceCount)` | All displayed metrics |
-| `ScenarioConfigLoader.Parse`, `ScenarioConfigValidator.ValidateOrThrow` | Bundled scenarios |
+| `new ScenarioConfigLoader().Parse(...)`, `new ScenarioConfigValidator().ValidateOrThrow(...)` (instance methods) | Bundled scenarios |
 | `MathNetDistributionFactory` (UrgentCare.Analysis) | Distribution factory, the same one the CLI uses |
 
 The view never calls a mutating member of `Department`, `Patient`, `CareResource`, or `SimulationClock`.
+
+One consequence is intentional: the CLI's `Run()` ends with `Clock.Complete()`, but a session drives the engine through `Begin()` and `RunOneEvent()` and never calls `Complete()`, so a finished session's engine clock still reports `Running`. Completion is the session's `PlaybackState`, decided by the completion rule in data-model.md. Metrics are unaffected because `StatisticsCollector` reads only the event log.
 
 ## Offered to the user (UI contract)
 

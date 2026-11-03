@@ -1,5 +1,6 @@
 using UrgentCare.Core.Domain;
 using UrgentCare.Core.Events;
+using UrgentCare.Core.Metrics;
 
 namespace UrgentCare.Web.Session;
 
@@ -61,6 +62,11 @@ public sealed class DepartmentSnapshot
 
     public int AbandonedCount { get; private init; }
 
+    /// <summary>Patients waiting right now, drawn or not.</summary>
+    public int QueueLength { get; private init; }
+
+    public SimulationMetrics Metrics { get; private init; } = new();
+
     public static DepartmentSnapshot From(VisualSession session)
     {
         ArgumentNullException.ThrowIfNull(session);
@@ -101,7 +107,9 @@ public sealed class DepartmentSnapshot
             RecentExits = [.. exits.Select(e => new ExitView(View(patients[e.Id]), e.Kind))],
             ArrivalCount = arrivalCount,
             CompletedCount = completed,
-            AbandonedCount = abandoned
+            AbandonedCount = abandoned,
+            QueueLength = department.QueueLength,
+            Metrics = session.Metrics
         };
     }
 
