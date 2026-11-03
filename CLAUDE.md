@@ -65,5 +65,5 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
 
 <!-- SPECKIT START -->
-For additional context about the Hospital Urgent Care Queue Simulator plan, see the current plan at `specs/001-urgent-care-simulator/plan.md`.
+For additional context about the Web Visual View plan, see the current plan at `specs/002-web-visual-view/plan.md`. The simulator itself is planned in `specs/001-urgent-care-simulator/plan.md`.
 <!-- SPECKIT END -->
