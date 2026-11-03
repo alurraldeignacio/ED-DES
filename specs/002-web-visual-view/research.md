@@ -33,7 +33,7 @@ Each entry records a decision, why it was made, and what else was considered.
 ## 5. Showing the waiting line in serve order
 
 - **Decision**: The snapshot lists waiting patients by calling the active `IQueuePolicy.SelectNext` repeatedly on a shrinking copy of the waiting area at the current time.
-- **Rationale**: `IQueuePolicy` is documented as read-only and deterministic, so repeated selection yields the policy's own total order, including UrgencyPlusWait's time-dependent escalation and protected tier, with no ordering logic in the view. Cost is O(n²) per frame; at the observed peak of 26 waiting it is negligible, and the snapshot only orders the patients it will draw plus a count.
+- **Rationale**: `IQueuePolicy` is documented as read-only and deterministic, so repeated selection yields the policy's own total order, including UrgencyPlusWait's time-dependent escalation and protected tier, with no ordering logic in the view. Cost is O(n²) per frame; at the observed peaks of 26 waiting (`default`) and 33 (`lean`) it is negligible, and the snapshot only orders the patients it will draw plus a count.
 - **Caveat recorded in the UI**: the engine may skip a room-blocked patient for a bypass-eligible one (`SelectAdmissiblePatient`). The line shows policy order; the room-blocked case is visible because the patient stays in line while a bypass patient moves to treatment.
 - **Alternatives considered**: Adding an `Order` method to `IQueuePolicy` (changes the interface and all three policies for one consumer); sorting by urgency in the view (wrong for FIFO and UrgencyPlusWait, and a duplicated rule).
 

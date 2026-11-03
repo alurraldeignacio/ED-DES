@@ -23,7 +23,7 @@ Each step names the spec item it proves.
 2. **Serve order and urgency** (US1-2, FR-006, FR-007). Pause when several patients are waiting. The leftmost patient is the next to be served; under `UrgencyFirst` the line is sorted by ESI number, and each token shows its number as text.
 3. **Room bypass** (US1-5). Step until both rooms are full and an ESI 1 or 2 patient starts treatment; they appear in the "No room (bypass)" area next to their nurse.
 4. **Abandonment** (US1-3). Play at 60 min/s until the abandoned counter rises; the patient leaves through the abandoned exit, distinct from the completed one.
-5. **Step** (US2-2, SC-004). Pause and press Step three times; the clock and exactly one patient change per press.
+5. **Step** (US2-2, SC-004). Pause and press Step three times; each press processes one event and moves the clock to its time. Usually one patient moves. A press may move nobody (a patience check for a patient already in treatment) or two patients at once (a treatment ends and the nurse takes the next patient).
 6. **Speed** (US2-3). Switch between speed presets while playing; the clock rate changes and the run continues.
 7. **Jump to end and parity** (US3-2, SC-002, SC-003). Press Jump to end, then compare with:
 

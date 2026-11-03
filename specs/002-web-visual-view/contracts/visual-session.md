@@ -1,6 +1,18 @@
 # Contract: Visual Session
 
+**Contract version**: 1.0.0
+
 The web view's contract has two sides: what it consumes from the engine, and what it offers the user. Both are listed so that a change on either side is a visible contract change.
+
+## Versioning
+
+The version follows the same major.minor.patch scheme as the scenario file's `schemaVersion`.
+
+- **Major**: a consumed engine member is removed, renamed, or changes meaning (for example `NextEventTime` stops respecting the horizon), or a user control changes behaviour (for example Restart stops reusing the seed).
+- **Minor**: a consumed member or a user control is added without changing existing ones.
+- **Patch**: wording or formatting changes with no behavioural effect.
+
+A change to any member listed below must bump this version in the same commit.
 
 ## Consumed from UrgentCare.Core (engine boundary)
 

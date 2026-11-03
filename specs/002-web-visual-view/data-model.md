@@ -32,8 +32,8 @@ One run as seen in the view. Owns the engine and the event log for that run; hol
 ```text
 Idle ──Play──▶ Playing ──Pause──▶ Paused ──Play──▶ Playing
   │               │                  │
-  │             (no events left      Step (one event; stays Paused,
-  │              or horizon reached)  or Complete if none left)
+  │             (completion rule     Step (one event; stays Paused,
+  │              below holds)         or Complete if none left)
   │               ▼                  │
   └──JumpToEnd──▶ Complete ◀──JumpToEnd──┘
 
@@ -42,11 +42,13 @@ Change scenario or seed (any state) ─▶ Idle with a fresh engine and log
 ```
 
 - `Step` from `Idle` begins the run and processes one event (state becomes `Paused`).
-- `Complete` is reached when `RunOneEvent()` returns false. `DisplayTime` is then set to the scenario's `TimeHorizon`.
+- **Completion rule** (the only one): once the run has begun, the session is `Complete` exactly when no event remains within the horizon *and* `DisplayTime` has reached `TimeHorizon`. "No event remains" means `Engine.NextEventTime` is null, which is the same condition under which `RunOneEvent()` returns false.
+  - During play, `Advance` stops processing events when `NextEventTime` is null but keeps moving `DisplayTime` at the playback speed. The session becomes `Complete` when `DisplayTime` reaches `TimeHorizon`, so patients still in the department stay visible as the clock runs to the end.
+  - `Step` and `JumpToEnd` find no event left (`RunOneEvent()` returns false), set `DisplayTime` to `TimeHorizon`, and so meet the rule immediately.
 
 **Rules**:
 - Speed changes never rebuild the engine (FR-010).
-- Each frame: `target = DisplayTime + Speed × min(elapsedSeconds, 0.25)`; process events while `Engine.NextEventTime <= target`; set `DisplayTime = min(target, TimeHorizon)`.
+- Each frame: `target = DisplayTime + Speed × min(elapsedSeconds, 0.25)`; process events while `Engine.NextEventTime <= target`; set `DisplayTime = min(target, TimeHorizon)`; then apply the completion rule.
 
 ## DepartmentSnapshot
 
