@@ -112,6 +112,7 @@ A user wants to run repeated simulations with the same inputs, compare aggregate
 - The simulation will treat operational assumptions as explicit configuration rather than hidden constants.
 - Triage acuity follows the ESI convention (1 most severe, 5 least severe), so a lower urgency value means a higher treatment priority.
 - Patients whose urgency value is at or below the configured `roomBypassUrgency` (that is, the most acute) bypass the treatment-room constraint, as a real department holds or clears a bay for a critical arrival. Triage itself is never room-constrained.
+- Under the UrgencyPlusWait policy, ESI 1 and 2 patients are never overtaken by a longer-waiting less acute patient. Waiting time escalates a patient only within the ESI 3 to 5 band. A resuscitation or emergent case cannot wait, so a policy that let accrued waiting time promote anyone past them would not be clinically usable.
 - This first version is intentionally limited to core flow logic and metrics and does not require hospital-grade clinical fidelity.
 
 ## Deferred Scope

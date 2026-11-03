@@ -44,6 +44,21 @@ The feature delivers a desktop urgent-care simulation that models patient arriva
 
 **Pass**: Commands and scenario actions remain discoverable and reproducible through a single local workflow and a CI-aligned validation path. The VS Code tasks (T009), the GitHub Actions workflow (T009a), and quickstart.md all invoke the same `dotnet restore`, `dotnet build`, and `dotnet test` commands against UrgentCare.sln.
 
+### Post-implementation re-check (T085)
+
+Re-checked against `.specify/memory/constitution.md` after all three user stories were built.
+
+- **Principle I, do not distribute by default**: Pass. One solution, three libraries and a console host, no process boundary. A 168-hour horizon runs in 0.01 s, so nothing is near a capacity argument for splitting.
+- **Principle II, optimize for deletion**: Pass. Each queue policy, the seed sequence, the percentile helper, and the aggregator are each small enough to delete and rewrite in an afternoon. The one abstraction added late, `SimulationEngine.Create`, replaced four copies of the same wiring rather than anticipating a fifth.
+- **Principle III, make dependencies explicit**: Pass, verified. Every collaborator arrives through a constructor or a parameter. A scan for mutable static state found none: every `static` member in `src/` and `analysis/` is either a pure function or a get-only immutable list. Core carries zero project references, so the engine cannot reach the analysis or presentation layers.
+- **Principle IV, contract at the boundary**: Pass. Three versioned boundaries now exist: the scenario configuration (`schemaVersion`, validated on load and rejected on an unsupported major version), the result export (fixed column set, stamped with the configuration version, disabled metrics written as null rather than omitted), and the event file (a header record carrying `eventStreamVersion` and `runId`, the decision recorded in research.md).
+- **Principle V, test the transformation**: Pass. 272 tests. Unit tests cover ordering rules, percentile edge cases, seed derivation, aggregation, and export shape; integration tests cover the engine across real process boundaries with the real distribution factory, no domain mocking.
+- **Principle VI, emit structured events**: Pass, verified. `StatisticsCollector.Collect` takes only the event list, the horizon, and the resource count; it holds no counters of its own, so every reported figure is derivable from an exported log.
+- **Principle VII, recovery over prevention**: N/A, recorded under Complexity Tracking below.
+- **Principle VIII, attention is finite**: N/A. No alerting surface; this is a local tool.
+- **Principle IX, value at the user**: Exception recorded under Complexity Tracking below.
+- **Principle X, commands discoverable**: Pass. quickstart.md now documents the full command set in one table, and the local command matches CI apart from CI's `--no-build`, which is explained in `ci.yml`.
+
 ## Project Structure
 
 ### Documentation (this feature)

@@ -1,8 +1,11 @@
 using UrgentCare.Core.Clock;
 using UrgentCare.Core.Configuration;
+using UrgentCare.Core.Distributions;
 using UrgentCare.Core.Domain;
 using UrgentCare.Core.Events;
 using UrgentCare.Core.Generation;
+using UrgentCare.Core.Queues;
+using UrgentCare.Core.Random;
 
 namespace UrgentCare.Core;
 
@@ -43,6 +46,36 @@ public sealed class SimulationEngine
         RunId = runId ?? Guid.NewGuid();
         ReplicationIndex = replicationIndex;
         Clock = new SimulationClock();
+    }
+
+    /// <summary>
+    /// Builds an engine from configuration alone: seed, queue policy, arrival profile, staffing
+    /// and rooms all come from the scenario, so changing behavior is a configuration edit rather
+    /// than a code edit (FR-012). The distribution factory is injected because it lives in the
+    /// analysis library, which Core must not reference (Constitution Principle III).
+    /// </summary>
+    /// <param name="seed">
+    /// Overrides the scenario seed, which is how a replication batch gives each run its own
+    /// stream while leaving the scenario file untouched.
+    /// </param>
+    public static SimulationEngine Create(
+        ScenarioConfig config,
+        IDistributionFactory distributionFactory,
+        IEventSink eventSink,
+        Guid? runId = null,
+        int replicationIndex = 0,
+        int? seed = null)
+    {
+        ArgumentNullException.ThrowIfNull(config);
+        ArgumentNullException.ThrowIfNull(distributionFactory);
+        ArgumentNullException.ThrowIfNull(eventSink);
+
+        var random = new SeededRandomSource(seed ?? config.Seed);
+        var generator = new PatientGenerator(config, distributionFactory, random);
+        var policy = QueuePolicyFactory.Create(config.Department.QueuePolicy);
+        var department = new Department(config.Department, config.ResourceProfile, policy);
+
+        return new SimulationEngine(config, department, generator, eventSink, runId, replicationIndex);
     }
 
     public Guid RunId { get; }

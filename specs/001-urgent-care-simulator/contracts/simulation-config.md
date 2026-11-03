@@ -127,7 +127,10 @@ Fatigue accrues across the *current* shift and resets when the next one begins, 
 - `scenarioId` MUST be unique per scenario run.
 - `seed` MUST be a valid integer when reproducibility is required.
 - `timeHorizon` MUST be greater than zero.
-- `queuePolicy` MUST map to a supported queue strategy such as FIFO, UrgencyFirst, or UrgencyPlusWait.
+- `queuePolicy` MUST map to a supported queue strategy: FIFO, UrgencyFirst, or UrgencyPlusWait.
+  - **FIFO** serves patients in arrival order and ignores acuity. It exists as the baseline a triage policy is measured against.
+  - **UrgencyFirst** serves the lowest urgency value first, breaking ties by arrival time.
+  - **UrgencyPlusWait** serves ESI 1 and 2 first on acuity alone, and orders the remaining patients by `urgency - waitingTime / escalationMinutes` so a low-acuity patient is not starved. Patients at or below the protected acuity MUST NOT be overtaken by a waiting patient, however long that patient has waited.
 - `resourceCount` and `roomCount` MUST be non-negative integers.
 - `roomBypassUrgency` MUST be an integer from 0 to 5, where 0 disables the bypass.
 - Every distribution object MUST declare a supported `family` and MUST supply that family's required parameters.

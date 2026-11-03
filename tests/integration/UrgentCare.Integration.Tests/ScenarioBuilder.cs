@@ -1,11 +1,7 @@
 using UrgentCare.Analysis.Distributions;
 using UrgentCare.Core;
 using UrgentCare.Core.Configuration;
-using UrgentCare.Core.Domain;
 using UrgentCare.Core.Events;
-using UrgentCare.Core.Generation;
-using UrgentCare.Core.Queues;
-using UrgentCare.Core.Random;
 
 namespace UrgentCare.Integration.Tests;
 
@@ -25,6 +21,7 @@ internal static class ScenarioBuilder
         double timeHorizon = 480.0,
         int seed = 12345,
         string queuePolicy = "UrgencyFirst",
+        bool hourlyVariation = false,
         DistributionConfig? serviceDuration = null,
         DistributionConfig? abandonmentThreshold = null,
         DistributionConfig? urgency = null) => new()
@@ -36,7 +33,7 @@ internal static class ScenarioBuilder
         ArrivalModel = new ArrivalModelConfig
         {
             BaseRatePerHour = baseRatePerHour,
-            HourlyVariation = false,
+            HourlyVariation = hourlyVariation,
             DailyVariation = false,
             SeasonalVariation = false,
             InterarrivalDistribution = new DistributionConfig { Family = "exponential" }
@@ -104,14 +101,10 @@ internal static class ScenarioBuilder
 
     public static (SimulationEngine Engine, InMemoryEventLog Log) Build(ScenarioConfig config)
     {
-        var random = new SeededRandomSource(config.Seed);
-        var factory = new MathNetDistributionFactory();
-        var generator = new PatientGenerator(config, factory, random);
-        var policy = QueuePolicyFor(config.Department.QueuePolicy);
-        var department = new Department(config.Department, config.ResourceProfile, policy);
         var log = new InMemoryEventLog();
+        var engine = SimulationEngine.Create(config, new MathNetDistributionFactory(), log);
 
-        return (new SimulationEngine(config, department, generator, log), log);
+        return (engine, log);
     }
 
     /// <summary>Runs a scenario to completion and hands back the engine and its event log.</summary>
@@ -121,10 +114,4 @@ internal static class ScenarioBuilder
         built.Engine.Run();
         return built;
     }
-
-    private static IQueuePolicy QueuePolicyFor(string name) => name switch
-    {
-        "UrgencyFirst" => new UrgencyFirstPolicy(),
-        _ => new UrgencyFirstPolicy()
-    };
 }

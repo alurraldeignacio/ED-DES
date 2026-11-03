@@ -148,25 +148,25 @@ ED-DES/                              # git repository; all source lives here
 
 > Write these first and confirm they FAIL before implementing.
 
-- [ ] T052 [P] [US2] Integration test comparing two staffing levels and asserting comparable reported metrics (AS1) in tests/integration/UrgentCare.Integration.Tests/StaffingComparisonTests.cs
-- [ ] T053 [P] [US2] Integration test asserting treatment order changes when the policy switches from FIFO to UrgencyFirst under a fixed seed (AS2) in tests/integration/UrgentCare.Integration.Tests/QueuePolicyComparisonTests.cs
-- [ ] T054 [P] [US2] Integration test asserting different arrival patterns change queue length and abandonment (AS3) in tests/integration/UrgentCare.Integration.Tests/ArrivalPatternTests.cs
-- [ ] T055 [P] [US2] Unit tests for FifoPolicy and UrgencyPlusWaitPolicy ordering in tests/unit/UrgentCare.Core.Tests/QueuePolicyTests.cs
-- [ ] T055b [P] [US2] Unit tests for averageQueueLength and maxQueueLength derivation, including an empty run, in tests/unit/UrgentCare.Core.Tests/StatisticsCollectorTests.cs
-- [ ] T055a [P] [US2] Unit tests for ScenarioComparison output shape and ResultExporter schema stability across runs in tests/unit/UrgentCare.Analysis.Tests/ScenarioComparisonTests.cs and tests/unit/UrgentCare.Analysis.Tests/ResultExporterTests.cs
+- [X] T052 [P] [US2] Integration test comparing two staffing levels and asserting comparable reported metrics (AS1) in tests/integration/UrgentCare.Integration.Tests/StaffingComparisonTests.cs
+- [X] T053 [P] [US2] Integration test asserting treatment order changes when the policy switches from FIFO to UrgencyFirst under a fixed seed (AS2) in tests/integration/UrgentCare.Integration.Tests/QueuePolicyComparisonTests.cs
+- [X] T054 [P] [US2] Integration test asserting different arrival patterns change queue length and abandonment (AS3) in tests/integration/UrgentCare.Integration.Tests/ArrivalPatternTests.cs
+- [X] T055 [P] [US2] Unit tests for FifoPolicy and UrgencyPlusWaitPolicy ordering in tests/unit/UrgentCare.Core.Tests/QueuePolicyTests.cs
+- [X] T055b [P] [US2] Unit tests for averageQueueLength and maxQueueLength derivation, including an empty run, in tests/unit/UrgentCare.Core.Tests/StatisticsCollectorTests.cs
+- [X] T055a [P] [US2] Unit tests for ScenarioComparison output shape and ResultExporter schema stability across runs in tests/unit/UrgentCare.Analysis.Tests/ScenarioComparisonTests.cs and tests/unit/UrgentCare.Analysis.Tests/ResultExporterTests.cs
 
 ### Implementation for User Story 2
 
-- [ ] T056 [P] [US2] Implement FifoPolicy in src/UrgentCare.Core/Queues/FifoPolicy.cs
-- [ ] T057 [P] [US2] Implement UrgencyPlusWaitPolicy in src/UrgentCare.Core/Queues/UrgencyPlusWaitPolicy.cs
-- [ ] T058 [US2] Implement QueuePolicyFactory resolving the config queuePolicy string to a policy instance in src/UrgentCare.Core/Queues/QueuePolicyFactory.cs
+- [X] T056 [P] [US2] Implement FifoPolicy in src/UrgentCare.Core/Queues/FifoPolicy.cs
+- [X] T057 [P] [US2] Implement UrgencyPlusWaitPolicy in src/UrgentCare.Core/Queues/UrgencyPlusWaitPolicy.cs
+- [X] T058 [US2] Implement QueuePolicyFactory resolving the config queuePolicy string to a policy instance in src/UrgentCare.Core/Queues/QueuePolicyFactory.cs
 - [X] T059 [US2] Implement the non-stationary arrival time profile (hourly, daily, seasonal variation) over `baseRatePerHour` in src/UrgentCare.Core/Generation/ArrivalModel.cs (FR-001)
-- [ ] T059a [US2] Add averageQueueLength and maxQueueLength to SimulationMetrics and derive both from the QueueLength field on the event stream in src/UrgentCare.Core/Metrics/StatisticsCollector.cs. Required by SC-002 and FR-009, and consumed by T054 and T063 (FR-009)
-- [ ] T060 [US2] Wire queuePolicy and arrivalModel selection from ScenarioConfig into engine construction in src/UrgentCare.Core/SimulationEngine.cs so behavior changes without code edits (FR-012)
-- [ ] T061 [US2] Implement ScenarioRunner executing a batch of scenario configurations in analysis/UrgentCare.Analysis/Scenarios/ScenarioRunner.cs
-- [ ] T062 [US2] Implement ScenarioComparison producing a baseline-versus-variant table of waiting time, throughput, abandonment, and utilization in analysis/UrgentCare.Analysis/Scenarios/ScenarioComparison.cs (FR-010)
-- [ ] T063 [US2] Implement ResultExporter writing JSON and CSV with a schema stable across runs, stamping each export with the `schemaVersion` of the configuration that produced it and always emitting the full column set, writing `null` for any metric disabled in MetricsConfig, in analysis/UrgentCare.Analysis/Metrics/ResultExporter.cs
-- [ ] T064 [US2] Add the `--compare <baseline> <variant>` CLI command in src/UrgentCare.Cli/Program.cs
+- [X] T059a [US2] Add averageQueueLength and maxQueueLength to SimulationMetrics and derive both from the QueueLength field on the event stream in src/UrgentCare.Core/Metrics/StatisticsCollector.cs. Required by SC-002 and FR-009, and consumed by T054 and T063 (FR-009)
+- [X] T060 [US2] Wire queuePolicy and arrivalModel selection from ScenarioConfig into engine construction in src/UrgentCare.Core/SimulationEngine.cs so behavior changes without code edits (FR-012)
+- [X] T061 [US2] Implement ScenarioRunner executing a batch of scenario configurations in analysis/UrgentCare.Analysis/Scenarios/ScenarioRunner.cs
+- [X] T062 [US2] Implement ScenarioComparison producing a baseline-versus-variant table of waiting time, throughput, abandonment, and utilization in analysis/UrgentCare.Analysis/Scenarios/ScenarioComparison.cs (FR-010)
+- [X] T063 [US2] Implement ResultExporter writing JSON and CSV with a schema stable across runs, stamping each export with the `schemaVersion` of the configuration that produced it and always emitting the full column set, writing `null` for any metric disabled in MetricsConfig, in analysis/UrgentCare.Analysis/Metrics/ResultExporter.cs
+- [X] T064 [US2] Add the `--compare <baseline> <variant>` CLI command in src/UrgentCare.Cli/Program.cs
 
 **Checkpoint**: User Stories 1 and 2 both work independently
 
@@ -182,22 +182,22 @@ ED-DES/                              # git repository; all source lives here
 
 > Write these first and confirm they FAIL before implementing.
 
-- [ ] T065 [P] [US3] Integration test asserting a fixed seed and configuration reproduce identical results across runs (AS1) in tests/integration/UrgentCare.Integration.Tests/ReproducibilityTests.cs
-- [ ] T066 [P] [US3] Integration test aggregating metrics across N replications (AS2) in tests/integration/UrgentCare.Integration.Tests/ReplicationAggregationTests.cs
-- [ ] T067 [P] [US3] Unit tests for percentile edge cases (empty set, single sample, interpolation between neighbours) against Core's shared helper, in tests/unit/UrgentCare.Core.Tests/PercentileTests.cs
-- [ ] T068 [P] [US3] Unit test asserting the per-replication seed sequence is deterministic and non-repeating in tests/unit/UrgentCare.Analysis.Tests/SeedSequenceTests.cs
-- [ ] T068a [P] [US3] Unit tests for MetricsAggregator (mean, P95, standard deviation, and confidence interval across replications) in tests/unit/UrgentCare.Analysis.Tests/MetricsAggregatorTests.cs
+- [X] T065 [P] [US3] Integration test asserting a fixed seed and configuration reproduce identical results across runs (AS1) in tests/integration/UrgentCare.Integration.Tests/ReproducibilityTests.cs
+- [X] T066 [P] [US3] Integration test aggregating metrics across N replications (AS2) in tests/integration/UrgentCare.Integration.Tests/ReplicationAggregationTests.cs
+- [X] T067 [P] [US3] Unit tests for percentile edge cases (empty set, single sample, interpolation between neighbours) against Core's shared helper, in tests/unit/UrgentCare.Core.Tests/PercentileTests.cs
+- [X] T068 [P] [US3] Unit test asserting the per-replication seed sequence is deterministic and non-repeating in tests/unit/UrgentCare.Analysis.Tests/SeedSequenceTests.cs
+- [X] T068a [P] [US3] Unit tests for MetricsAggregator (mean, P95, standard deviation, and confidence interval across replications) in tests/unit/UrgentCare.Analysis.Tests/MetricsAggregatorTests.cs
 
 ### Implementation for User Story 3
 
-- [ ] T069 [US3] Promote the existing percentile helper in src/UrgentCare.Core/Metrics/StatisticsCollector.cs from `internal` to a public shared utility so UrgentCare.Analysis can call it. Do NOT write a second implementation in Analysis: Core cannot reference Analysis, and two copies would let the single-run P95 and the across-replication P95 drift to different rounding rules
+- [X] T069 [US3] Promote the existing percentile helper in src/UrgentCare.Core/Metrics/StatisticsCollector.cs from `internal` to a public shared utility so UrgentCare.Analysis can call it. Do NOT write a second implementation in Analysis: Core cannot reference Analysis, and two copies would let the single-run P95 and the across-replication P95 drift to different rounding rules
 - [X] T070 [US3] Add p95WaitTime and the per-resource utilization breakdown to src/UrgentCare.Core/Metrics/StatisticsCollector.cs per data-model.md. T048 already produces department-wide aggregate utilization; this task adds only the per-resource map and the P95 figure on top of it
-- [ ] T071 [US3] Implement deterministic per-replication seed derivation in analysis/UrgentCare.Analysis/Scenarios/SeedSequence.cs
-- [ ] T072 [US3] Implement ReplicationRunner executing N replications of one scenario in analysis/UrgentCare.Analysis/Scenarios/ReplicationRunner.cs (FR-011)
-- [ ] T073 [US3] Implement MetricsAggregator computing mean, P95, standard deviation, and confidence interval across replications in analysis/UrgentCare.Analysis/Metrics/MetricsAggregator.cs, using the shared percentile helper from T069 rather than its own
-- [ ] T074 [US3] Implement RunManifest recording scenario assumptions alongside observed outcomes for review (AS3) in analysis/UrgentCare.Analysis/Scenarios/RunManifest.cs
-- [ ] T075 [US3] Extend ResultExporter with an aggregated multi-run summary export in analysis/UrgentCare.Analysis/Metrics/ResultExporter.cs
-- [ ] T076 [US3] Add the `--replications <n>` CLI option in src/UrgentCare.Cli/Program.cs and src/UrgentCare.Cli/CommandLineOptions.cs
+- [X] T071 [US3] Implement deterministic per-replication seed derivation in analysis/UrgentCare.Analysis/Scenarios/SeedSequence.cs
+- [X] T072 [US3] Implement ReplicationRunner executing N replications of one scenario in analysis/UrgentCare.Analysis/Scenarios/ReplicationRunner.cs (FR-011)
+- [X] T073 [US3] Implement MetricsAggregator computing mean, P95, standard deviation, and confidence interval across replications in analysis/UrgentCare.Analysis/Metrics/MetricsAggregator.cs, using the shared percentile helper from T069 rather than its own
+- [X] T074 [US3] Implement RunManifest recording scenario assumptions alongside observed outcomes for review (AS3) in analysis/UrgentCare.Analysis/Scenarios/RunManifest.cs
+- [X] T075 [US3] Extend ResultExporter with an aggregated multi-run summary export in analysis/UrgentCare.Analysis/Metrics/ResultExporter.cs
+- [X] T076 [US3] Add the `--replications <n>` CLI option in src/UrgentCare.Cli/Program.cs and src/UrgentCare.Cli/CommandLineOptions.cs
 
 **Checkpoint**: All three user stories are independently functional
 
@@ -205,15 +205,15 @@ ED-DES/                              # git repository; all source lives here
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T077 [P] Rewrite README.md in English with a Stack section (C#, .NET 10, Unity optional, VS Code) and a short project description
-- [ ] T078 [P] Add unity/README.md recording that the Unity presentation layer is deferred and must not own simulation state (research.md decision), and recording the runtime constraint: Unity 2022 LTS cannot reference a net10.0 assembly, so a future visual layer needs either a netstandard2.1 interop surface over UrgentCare.Core or a Unity version with a newer scripting runtime
-- [ ] T079 [P] Document the full command set in one place in specs/001-urgent-care-simulator/quickstart.md so local commands match CI (Constitution Principle X)
-- [ ] T080 Add structured logging configuration bridging IEventSink to console and file output in src/UrgentCare.Cli/Program.cs. The file sink MUST write a header record carrying `schemaVersion` and `runId` before the first event, per the Event stream export rule in contracts/simulation-config.md; `SimulationEvent` itself stays unversioned. This is the machine-readable event stream and is distinct from T049, which renders the human-facing operational view; the two must not share a writer
+- [X] T077 [P] Rewrite README.md in English with a Stack section (C#, .NET 10, Unity optional, VS Code) and a short project description
+- [X] T078 [P] Add unity/README.md recording that the Unity presentation layer is deferred and must not own simulation state (research.md decision), and recording the runtime constraint: Unity 2022 LTS cannot reference a net10.0 assembly, so a future visual layer needs either a netstandard2.1 interop surface over UrgentCare.Core or a Unity version with a newer scripting runtime
+- [X] T079 [P] Document the full command set in one place in specs/001-urgent-care-simulator/quickstart.md so local commands match CI (Constitution Principle X)
+- [X] T080 Add structured logging configuration bridging IEventSink to console and file output in src/UrgentCare.Cli/Program.cs. The file sink MUST write a header record carrying `schemaVersion` and `runId` before the first event, per the Event stream export rule in contracts/simulation-config.md; `SimulationEvent` itself stays unversioned. This is the machine-readable event stream and is distinct from T049, which renders the human-facing operational view; the two must not share a writer
 - [X] T081 Verify that a 10080-minute (168-hour) horizon on the default scenario completes in under 10 seconds, and record the measured timing in specs/001-urgent-care-simulator/quickstart.md
-- [ ] T082 Verify every namespace, type, member, and comment across src/, analysis/, and tests/ is written in English
-- [ ] T083 Run the full quickstart.md validation workflow end to end and fix any drift between documented and actual commands
-- [ ] T084 Run `dotnet test UrgentCare.sln` and confirm all unit and integration tests pass
-- [ ] T085 Re-check the design against .specify/memory/constitution.md (no hidden global state, metrics derived from events, explicit dependencies) and record the result in the Constitution Check section of specs/001-urgent-care-simulator/plan.md
+- [X] T082 Verify every namespace, type, member, and comment across src/, analysis/, and tests/ is written in English
+- [X] T083 Run the full quickstart.md validation workflow end to end and fix any drift between documented and actual commands
+- [X] T084 Run `dotnet test UrgentCare.sln` and confirm all unit and integration tests pass
+- [X] T085 Re-check the design against .specify/memory/constitution.md (no hidden global state, metrics derived from events, explicit dependencies) and record the result in the Constitution Check section of specs/001-urgent-care-simulator/plan.md
 
 ---
 

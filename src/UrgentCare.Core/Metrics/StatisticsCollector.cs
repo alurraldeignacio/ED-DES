@@ -28,6 +28,16 @@ public sealed record SimulationMetrics
 
     /// <summary>Utilization per care resource, when reporting is enabled.</summary>
     public IReadOnlyDictionary<string, double>? UtilizationByResource { get; init; }
+
+    /// <summary>
+    /// Mean number of patients waiting, weighted by how long each queue length held. This is
+    /// the queueing-theory L: a plain mean over events would over-weight busy moments, because
+    /// events cluster exactly where the queue is changing fastest.
+    /// </summary>
+    public double AverageQueueLength { get; init; }
+
+    /// <summary>Longest the waiting area ever got during the run.</summary>
+    public int MaxQueueLength { get; init; }
 }
 
 /// <summary>
@@ -105,6 +115,7 @@ public sealed class StatisticsCollector
         }
 
         var hours = timeHorizonMinutes / 60.0;
+        var (averageQueueLength, maxQueueLength) = QueueLength(events, timeHorizonMinutes);
 
         return new SimulationMetrics
         {
@@ -115,7 +126,7 @@ public sealed class StatisticsCollector
             AverageWaitTime = _metricsConfig.ReportAverageWait
                 ? waitTimes.Count > 0 ? waitTimes.Average() : 0.0
                 : null,
-            P95WaitTime = _metricsConfig.ReportP95Wait ? Percentile(waitTimes, 0.95) : null,
+            P95WaitTime = _metricsConfig.ReportP95Wait ? Percentile.Of(waitTimes, 0.95) : null,
             AbandonmentRate = _metricsConfig.ReportAbandonmentRate
                 ? arrivals > 0 ? (double)abandoned / arrivals : 0.0
                 : null,
@@ -124,37 +135,47 @@ public sealed class StatisticsCollector
                 : null,
             UtilizationByResource = _metricsConfig.ReportUtilization
                 ? UtilizationByResource(busyMinutesByResource, timeHorizonMinutes)
-                : null
+                : null,
+            AverageQueueLength = averageQueueLength,
+            MaxQueueLength = maxQueueLength
         };
     }
 
     /// <summary>
-    /// Linear-interpolated percentile. Returns 0 for an empty sample, which is the only
-    /// sensible answer when nobody ever waited.
+    /// Time-weighted mean queue length and the peak, read off the QueueLength carried by every
+    /// event. Each event records the waiting-area size at the instant it was emitted, so the
+    /// length between two consecutive events is the one the earlier event reported, and it held
+    /// for exactly that gap. The final reading holds until the horizon.
     /// </summary>
-    internal static double Percentile(IReadOnlyList<double> values, double percentile)
+    private static (double Average, int Max) QueueLength(
+        IReadOnlyList<SimulationEvent> events,
+        double timeHorizonMinutes)
     {
-        if (values.Count == 0)
+        var previousTime = 0.0;
+        var previousLength = 0;
+        var weighted = 0.0;
+        var max = 0;
+
+        foreach (var e in events)
         {
-            return 0.0;
+            weighted += previousLength * (e.Timestamp - previousTime);
+            previousTime = e.Timestamp;
+            previousLength = e.QueueLength;
+
+            if (e.QueueLength > max)
+            {
+                max = e.QueueLength;
+            }
         }
 
-        if (values.Count == 1)
+        if (timeHorizonMinutes <= 0)
         {
-            return values[0];
+            return (0.0, max);
         }
 
-        var sorted = values.OrderBy(v => v).ToArray();
-        var position = percentile * (sorted.Length - 1);
-        var lower = (int)Math.Floor(position);
-        var upper = (int)Math.Ceiling(position);
+        weighted += previousLength * (timeHorizonMinutes - previousTime);
 
-        if (lower == upper)
-        {
-            return sorted[lower];
-        }
-
-        return sorted[lower] + ((position - lower) * (sorted[upper] - sorted[lower]));
+        return (weighted / timeHorizonMinutes, max);
     }
 
     private static double OverallUtilization(
